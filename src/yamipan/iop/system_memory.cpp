@@ -3,40 +3,19 @@
 #include <algorithm>
 #include <iterator>
 
-#include "yamipan/core/logger.h"
-
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 namespace yamipan::iop
 {
 
 SystemMemory::SystemMemory()
+    : m_ram(std::make_unique<Ram>()) // zeroed, as the old reservation's fresh pages were
 {
-#ifdef _WIN32
-    // The first free 2 MB from 256 MB up, below 4 GB. An IOP address is the block's host address.
-    for (std::uintptr_t hint = 0x10000000; hint < 0xf0000000 && m_base == nullptr; hint += 0x01000000)
-        m_base = static_cast<std::byte *>(
-            VirtualAlloc(reinterpret_cast<void *>(hint), kSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE));
-#endif
-    if (m_base == nullptr)
-    {
-        log::error("iop: no 2 MB below 4 GB for the IOP's memory; AllocSysMemory will fail");
-        return;
-    }
-    m_free.emplace(0, kSize);
+    // The first granule stays the kernel's, so no block's IOP address is 0.
+    m_free.emplace(kGranule, kSize - kGranule);
 }
 
-SystemMemory::~SystemMemory()
-{
-#ifdef _WIN32
-    if (m_base != nullptr)
-        VirtualFree(m_base, 0, MEM_RELEASE);
-#endif
-}
+SystemMemory::~SystemMemory() = default;
 
-void *SystemMemory::allocate(std::size_t size, Placement placement)
+std::uint32_t SystemMemory::allocate(std::size_t size, Placement placement)
 {
     size = size == 0 ? kGranule : (size + kGranule - 1) & ~(kGranule - 1);
 
@@ -52,9 +31,9 @@ void *SystemMemory::allocate(std::size_t size, Placement placement)
             if (it->second == 0)
                 m_free.erase(std::next(it).base());
             m_used.emplace(offset, size);
-            return m_base + offset;
+            return static_cast<std::uint32_t>(offset);
         }
-        return nullptr;
+        return 0;
     }
     for (auto it = m_free.begin(); it != m_free.end(); ++it)
     {
@@ -66,18 +45,18 @@ void *SystemMemory::allocate(std::size_t size, Placement placement)
         if (rest != 0)
             m_free.emplace(offset + size, rest);
         m_used.emplace(offset, size);
-        return m_base + offset;
+        return static_cast<std::uint32_t>(offset);
     }
-    return nullptr;
+    return 0;
 }
 
-bool SystemMemory::free(void *block)
+bool SystemMemory::free(std::uint32_t address)
 {
-    if (m_base == nullptr || block == nullptr)
+    if (address == 0)
         return false;
 
     std::lock_guard lock(m_lock);
-    const auto used = m_used.find(static_cast<std::size_t>(static_cast<std::byte *>(block) - m_base));
+    const auto used = m_used.find(address);
     if (used == m_used.end())
         return false;
 
@@ -104,6 +83,22 @@ bool SystemMemory::free(void *block)
     }
     m_free.emplace(offset, size);
     return true;
+}
+
+void *SystemMemory::pointer(std::uint32_t address) const
+{
+    if (address == 0 || address >= kSize)
+        return nullptr;
+    return m_ram->bytes + address;
+}
+
+std::uint32_t SystemMemory::address(const void *pointer) const
+{
+    const auto host = reinterpret_cast<std::uintptr_t>(pointer);
+    const auto base = reinterpret_cast<std::uintptr_t>(m_ram->bytes);
+    if (host < base || host - base >= kSize)
+        return 0;
+    return static_cast<std::uint32_t>(host - base);
 }
 
 std::size_t SystemMemory::largestFree() const

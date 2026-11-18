@@ -57,7 +57,7 @@ static RxSndDrvXseq s_xseq[RXSNDDRV_XSEQ_MAX]; // RoR IOP 0x0001a680
 int RxSndDrvXseqOpen(u_int id, u_int iop)
 {
     int           no   = (int)id;
-    u_char       *file = (u_char *)(uintptr_t)iop;
+    u_char       *file = (u_char *)YamiPan_IopPointer(iop);
     RxSndDrvXseq *slot;
 
     if (no < 0)
@@ -90,10 +90,10 @@ int RxSndDrvXseqOpen(u_int id, u_int iop)
     if (!RxSndDrvXseqAttach(file))
         return -1;
 
-    slot->m_head = (u_int)(uintptr_t)RxSndDrvXseqChunkFind(file, RXSNDDRV_TAG_HEAD);
+    slot->m_head = YamiPan_IopAddress(RxSndDrvXseqChunkFind(file, RXSNDDRV_TAG_HEAD));
     if (slot->m_head == 0)
     {
-        slot->m_head = (u_int)(uintptr_t)RxSndDrvXseqChunkFind(file, RXSNDDRV_TAG_MIDI);
+        slot->m_head = YamiPan_IopAddress(RxSndDrvXseqChunkFind(file, RXSNDDRV_TAG_MIDI));
         if (slot->m_head == 0)
         {
             if (RxSndDrvGetDebugFlags() & RXSNDDRV_DBG_ERROR)
@@ -214,7 +214,7 @@ int RxSndDrvXseqClose(u_int id)
     else if (slot->m_users <= 0)
     {
         ret = 0;
-        RxSndDrvXseqDetach((u_char *)(uintptr_t)slot->m_file);
+        RxSndDrvXseqDetach((u_char *)YamiPan_IopPointer(slot->m_file));
         slot->m_file  = 0;
         slot->m_state = -1;
         /* The IOP copies m_head unaligned from IOP address 0 (lwl / lwr off

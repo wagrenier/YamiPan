@@ -78,7 +78,7 @@ static RxSndDrvXvab s_xvab[RXSNDDRV_XVAB_MAX]; // RoR IOP 0x00019680
 int RxSndDrvXvabOpen(u_int id, u_int iop, u_int spu)
 {
     int           no   = (int)id;
-    u_char       *file = (u_char *)(uintptr_t)iop;
+    u_char       *file = (u_char *)YamiPan_IopPointer(iop);
     RxSndDrvXvab *slot;
 
     if (no < 0)
@@ -123,11 +123,11 @@ int RxSndDrvXvabOpen(u_int id, u_int iop, u_int spu)
     }
     else
     {
-        slot->m_tables.m_tgif = (u_int)(uintptr_t)RxSndDrvChunkFind(file, RXSNDDRV_TAG_TGIF);
-        slot->m_tables.m_seif = (u_int)(uintptr_t)RxSndDrvChunkFind(file, RXSNDDRV_TAG_SEIF);
-        slot->m_tables.m_velt = (u_int)(uintptr_t)RxSndDrvChunkFind(file, RXSNDDRV_TAG_VELT);
-        slot->m_tables.m_pant = (u_int)(uintptr_t)RxSndDrvChunkFind(file, RXSNDDRV_TAG_PANT);
-        slot->m_tables.m_lfot = (u_int)(uintptr_t)RxSndDrvChunkFind(file, RXSNDDRV_TAG_LFOT);
+        slot->m_tables.m_tgif = YamiPan_IopAddress(RxSndDrvChunkFind(file, RXSNDDRV_TAG_TGIF));
+        slot->m_tables.m_seif = YamiPan_IopAddress(RxSndDrvChunkFind(file, RXSNDDRV_TAG_SEIF));
+        slot->m_tables.m_velt = YamiPan_IopAddress(RxSndDrvChunkFind(file, RXSNDDRV_TAG_VELT));
+        slot->m_tables.m_pant = YamiPan_IopAddress(RxSndDrvChunkFind(file, RXSNDDRV_TAG_PANT));
+        slot->m_tables.m_lfot = YamiPan_IopAddress(RxSndDrvChunkFind(file, RXSNDDRV_TAG_LFOT));
     }
     slot->m_file          = iop;
     slot->m_tables.m_spu  = spu;
@@ -270,7 +270,7 @@ int RxSndDrvXvabClose(u_int id)
     else if (slot->m_users <= 0)
     {
         ret = 0;
-        RxSndDrvXvabDetach((u_char *)(uintptr_t)slot->m_file);
+        RxSndDrvXvabDetach((u_char *)YamiPan_IopPointer(slot->m_file));
         slot->m_file         = 0;
         slot->m_tables.m_spu = 0;
         memset(&slot->m_tables, 0, 0x14);
@@ -340,7 +340,7 @@ u_int RxSndDrvXvabFindSe(int id, int group, int index, int *ticks, int *a, int *
     CpuSuspendIntr(&intr);
     if (s_xvab[id].m_file != 0 && s_xvab[id].m_tables.m_seif != 0)
     {
-        u_char                  *base = (u_char *)(uintptr_t)s_xvab[id].m_tables.m_seif;
+        u_char                  *base = (u_char *)YamiPan_IopPointer(s_xvab[id].m_tables.m_seif);
         const RxSndDrvXvabTable *seif = (const RxSndDrvXvabTable *)base;
 
         if (group < seif->m_count && seif->m_offset[group] != 0)
@@ -352,7 +352,7 @@ u_int RxSndDrvXvabFindSe(int id, int group, int index, int *ticks, int *a, int *
                 const RxSndDrvXvabSe *se    = (const RxSndDrvXvabSe *)(base + list->m_offset[index]);
                 u_short               flags = se->m_flags;
 
-                data   = (u_int)(uintptr_t)(base + se->m_data);
+                data   = YamiPan_IopAddress(base + se->m_data);
                 *ticks = flags & 0x3ff;
                 *a     = se->m_a;
                 if (flags & 0x1000)
@@ -424,7 +424,7 @@ int RxSndDrvXvabHasSe(int id, int group, int index)
     CpuSuspendIntr(&intr);
     if (s_xvab[id].m_file != 0 && s_xvab[id].m_tables.m_seif != 0)
     {
-        u_char                  *base = (u_char *)(uintptr_t)s_xvab[id].m_tables.m_seif;
+        u_char                  *base = (u_char *)YamiPan_IopPointer(s_xvab[id].m_tables.m_seif);
         const RxSndDrvXvabTable *seif = (const RxSndDrvXvabTable *)base;
 
         if (group < seif->m_count && seif->m_offset[group] != 0)
@@ -432,7 +432,7 @@ int RxSndDrvXvabHasSe(int id, int group, int index)
             const RxSndDrvXvabTable *list = (const RxSndDrvXvabTable *)(base + seif->m_offset[group]);
 
             if (index < list->m_count && list->m_offset[index] != 0)
-                data = (u_int)(uintptr_t)(base + ((const RxSndDrvXvabSe *)(base + list->m_offset[index]))->m_data);
+                data = YamiPan_IopAddress(base + ((const RxSndDrvXvabSe *)(base + list->m_offset[index]))->m_data);
         }
     }
     CpuResumeIntr(intr);

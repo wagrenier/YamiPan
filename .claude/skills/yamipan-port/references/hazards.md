@@ -382,8 +382,10 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   `std::condition_variable::wait_until` and `std::this_thread::sleep_for` under MinGW's libstdc++ land
   on the 15.6 ms system tick even with SDL's `timeBeginPeriod(1)` in force (measured in one process:
   Win32 `Sleep(1)` 1.6 ms, `sleep_for(1ms)` 15.5 ms; `timeBeginPeriod` and the power-throttling opt-out
-  change nothing for the std calls). Fix: `os::TimedWaiter`, a high-resolution waitable timer plus an
-  event; `YamiPan_Sleep` through `SDL_DelayNS`, which uses the same timer.
+  change nothing for the std calls). Fix: `os::TimedWaiter`, an SDL semaphore (a wake() ends the wait at
+  once) until 2 ms before the deadline, then `SDL_DelayNS` slices, a high-resolution waitable timer on
+  Windows; `YamiPan_Sleep` through `SDL_DelayNS` too. No Win32 of its own (the project includes no
+  windows.h).
 - **A null call in the job worker** (2026-11-03, `FileJob::run`): `rxInit` is a stub, so the rx file hooks
   are null. Not a kernel bug: the boot reached the file layer (open-items.md "Next up" 8a).
 
@@ -556,7 +558,7 @@ A Bash call carrying a whole source file fails with ENAMETOOLONG (uv_spawn), and
 - **A long teleport in a temporary test is a walk** (2026-11-05). Symptom: F_PC01, moved by a test next to a ledge, stood 85 units away and 55 higher a few frames later with no motion playing. Cause: `CharacterGround::sweepWalls` sweeps from last frame's position, so a far jump stops at the first wall on the way. Fix: test from where the sweep will not meet a wall, or go in two short steps; also clear the ground's `lastPosition` in the test. Also: `build.py` kills a run at its limit, so the newest shot and last.png can be empty files: read the one before.
 - **`fprintf(stderr)` does not reach `work/run_relwithdebinfo.log`** (2026-11-05): only stdout does. Temporary traces: `printf` + `fflush(stdout)`.
 - **A stubbed ctor leaves a host object of garbage** (2026-11-05). Symptom: an access violation in 3 of 4 runs, never under gdb, nowhere near the new code's logic. Cause: a stub body runs no member init, and plain `new` is the host heap, so every field holds what the heap held; `StageMenu`'s `pending` and `pendingOn` were read as a string. Fix: when written code starts reading a class, write its ctor (or give its members default initialisers) first. Still stubbed and worth a look when their fields get read: `PauseMenuState`, `SceneUiState`, `KeepList`, `StageParty`, `AreaClip`, `SceneBoxList`, `Rand48` (`grep -n "::.*(.*)$" src/lib/unassigned_stubs.cpp`).
-- **A crash that hides from gdb: read `[crash]` first** (2026-11-05). Every run now prints the fault and its stack on stdout (`yamipan::crash`): `py crashsym.py` turns the lines of work/run_relwithdebinfo.log into functions, on any `build.py --run`. Several plain runs side by side reproduce a rare fault in one go; two of three caught this one.
+- **A crash that hides from gdb: read `[crash]` first** (2026-11-05). Every run now prints the fault and its stack on stdout (`yamipan::crash`): signal handlers (per thread under Windows' CRT, so `os::Thread` installs them in each thread) and std::terminate, with the frames symbolised by `<stacktrace>` (MinGW links `stdc++exp`). No registers or fault address since the Win32 filter went (2026-11-18, no windows.h); `crashsym.py` read the old `exe+0x` lines. Several plain runs side by side reproduce a rare fault in one go; two of three caught this one.
 - **A hook folded into another function changes who runs first** (2026-11-05). Symptom: a script's request reached no one: native 0x87 answered 1 and `wants.useDoor` was 0 at the condition. Cause: the character's start hook lived in `stageUpdateCharacterMotions`, after `runStageScripts`, where the ROM has it in `actionStart`, before. Fix: the ROM's order (`sideHook0`, `sideHook1`). When a PC comment says "this is their order", check what runs between.
 - **Line endings and rewriting source from a script** (2026-11-05). Symptom: a five-line edit showed as 10,000 changed lines, then string literals broke across lines. Cause: Python text-mode `open` turns CRLF sources mixed, and `\\n` in an inline heredoc is eaten by the shell. Fix: write the edit script with the Write tool, into the scratchpad, and read and write bytes (`'rb'`, `'wb'`), or use Edit; files can be LF or CRLF, so detect it.
 

@@ -51,4 +51,11 @@ int YamiPan_IopQueryMemSize(void);
 int YamiPan_IopQueryMaxFreeMemSize(void);
 int YamiPan_IopQueryTotalFreeMemSize(void);
 
+// PC: the IOP's RAM is a host arena (yamipan::iop::SystemMemory), and an IOP address is an offset into it,
+// as on the IOP. A u_int holding one becomes the host pointer through YamiPan_IopPointer (0 stays null), and
+// a pointer into the arena becomes the word through YamiPan_IopAddress. AllocSysMemory's blocks are host
+// pointers, since the driver dereferences them.
+void *YamiPan_IopPointer(u_int iopAddr);
+u_int YamiPan_IopAddress(const void *ptr);
+
 } // extern "C"

@@ -2052,8 +2052,10 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   and WaitVblankEnd, so the driver's CpuSuspendIntr sections need nothing more (it is a no-op); threads as
   detached host threads (the driver's loop for ever, so the kernel is never destroyed); event flags; a
   V-blank grid at the EE's video standard, read each wait (RosePan's was a fixed 60 Hz). `iop::SystemMemory`
-  is the IOP's 2 MB reserved below 4 GB, first fit at 256 bytes: the driver keeps IOP addresses as u_int
-  and dereferences them. `sdk/iop.cpp` forwards thbase / thevent / intrman / sysmem / loadcore / vblank to
+  is the IOP's 2 MB as a plain host arena, first fit at 256 bytes. An IOP address is an offset into it, as
+  on the IOP (the first 256 bytes stay unallocated, so 0 is never a block): the driver keeps them as u_int
+  and turns one into a pointer through `YamiPan_IopPointer`, a pointer back through `YamiPan_IopAddress`
+  (sdk/iop_host.h). No OS call reserves anything, so the IOP works on every platform. `sdk/iop.cpp` forwards thbase / thevent / intrman / sysmem / loadcore / vblank to
   them, and the IOP side of sifcmd to `iop::RpcServers` (sceSifRpcLoop opens a queue's servers and
   returns; `YamiPan_IopRpcDispatch` runs a server's handler on the caller's thread under the big kernel
   lock), and libsd to `iop::Spu2` (the next point). **sdk/sif.cpp boots the driver** when rxfile loads
@@ -2187,8 +2189,9 @@ by shape (marked; those in 0x31a0e0..0x31a7a0 may be other function tables). Nam
   running the end function (every other client still gets zeros); sceSifSetDma and sceSifGetOtherData
   copy (both sides use them: the EE's rxSndIopWrite / rxSndIopRead with IOP addresses, the driver's
   SendToEe / GetFromEe with EE pointers widened through the `YamiPan_RxSndNoteEeAddress` notes);
-  sceSifAllocSysMemory / FreeSysMemory are `iop::SystemMemory` (mode 1 high, else low), so an IOP address
-  the EE holds is a host address in the arena (0x10000000.. in the runs). `YamiPan_IopSoundDriverRuns()`
+  sceSifAllocSysMemory / FreeSysMemory are `iop::SystemMemory` (mode 1 high, else low), and the EE holds
+  the IOP address (an offset, 0x100..0x1fffff), as on the PS2; rx/rxsnd.c passes SIF DMA its
+  `YamiPan_IopPointer`, since sceSifSetDma and sceSifGetOtherData copy between host pointers. `YamiPan_IopSoundDriverRuns()`
   (sifcmd.h) is 1 once the driver serves 0xd000: rx/rxsndstradpcm.c and rxsndstrpcm.c then skip their
   "driver's silent side" and pass the ROM's buffer addresses (0 makes the open allocate from the IOP and
   SPU heaps). Until the driver was the default (the same day) a run without the switch kept the old

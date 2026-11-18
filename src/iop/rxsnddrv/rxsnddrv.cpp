@@ -186,13 +186,12 @@ u_int RxSndDrvCommand(u_int cmd, u_char *reply, const u_int *data)
     /* The IOP heap, for the EE's rxSndIopAlloc / Free. */
     case 0x20:
         CpuSuspendIntr(&intr);
-        ret = (u_int)(uintptr_t)AllocSysMemory((int)data[0], (int)data[1],
-                                               (void *)(uintptr_t)data[2]);
+        ret = YamiPan_IopAddress(AllocSysMemory((int)data[0], (int)data[1], YamiPan_IopPointer(data[2])));
         CpuResumeIntr(intr);
         return ret;
     case 0x21:
         CpuSuspendIntr(&intr);
-        FreeSysMemory((void *)(uintptr_t)data[0]);
+        FreeSysMemory(YamiPan_IopPointer(data[0]));
         CpuResumeIntr(intr);
         return 0;
     case 0x22:
@@ -208,8 +207,8 @@ u_int RxSndDrvCommand(u_int cmd, u_char *reply, const u_int *data)
     case 0x23:
     {
         /* {dst, src, size}: an overlap-safe copy inside IOP memory. */
-        u_char       *dst  = (u_char *)(uintptr_t)data[0];
-        const u_char *src  = (const u_char *)(uintptr_t)data[1];
+        u_char       *dst  = (u_char *)YamiPan_IopPointer(data[0]);
+        const u_char *src  = (const u_char *)YamiPan_IopPointer(data[1]);
         int           size = (int)data[2];
 
         if (src <= dst)

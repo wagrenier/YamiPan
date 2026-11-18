@@ -74,6 +74,10 @@ if(MSVC)
 else()
     target_compile_options(YamiPan PRIVATE -Wall -Wextra -Wpedantic -Wshadow -Wno-missing-field-initializers)
 endif()
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # libstdc++ keeps <stacktrace> (core/crash_report.cpp) in a separate library.
+    target_link_libraries(YamiPan PRIVATE stdc++exp)
+endif()
 
 if(YAMIPAN_HAVE_FFMPEG)
     target_compile_definitions(YamiPan PRIVATE YAMIPAN_HAVE_FFMPEG=1)

@@ -568,8 +568,8 @@ void rxSndIopFree(u_int addr)
     s_iopFreeHook(addr);
 }
 
-/* PC: an IOP address is a host address in the IOP's memory (sdk/sif.cpp), so
- * sceSifSetDma copies. */
+/* PC: sceSifSetDma copies between host pointers (sdk/sif.cpp), so the IOP
+ * address goes in as the pointer it names (YamiPan_IopPointer). */
 // FS2 0x0015a690
 int rxSndIopWrite(u_int iopAddr, const void *src, int size)
 {
@@ -586,7 +586,7 @@ int rxSndIopWrite(u_int iopAddr, const void *src, int size)
 
             FlushCache(0);
             dma.data = (void *)src;
-            dma.addr = (void *)(uintptr_t)iopAddr;
+            dma.addr = YamiPan_IopPointer(iopAddr);
             dma.size = size;
             dma.mode = 0;
             u_int id = sceSifSetDma(&dma, 1);
@@ -645,8 +645,8 @@ int rxSndIopWrite(u_int iopAddr, const void *src, int size)
 /* The mirror of rxSndIopWrite: the unaligned head and tail come through the
  * EE bounce buffer; the middle is read 16-byte aligned (the pad from `dst`'s
  * own alignment, as the ROM computes it) and moved into place.
- * PC: an IOP address is a host address in the IOP's memory (sdk/sif.cpp), so
- * sceSifGetOtherData copies. */
+ * PC: sceSifGetOtherData copies between host pointers (sdk/sif.cpp), so the
+ * IOP address goes in as the pointer it names (YamiPan_IopPointer). */
 // FS2 0x0015a8a0
 int rxSndIopRead(void *dst, u_int iopAddr, int size)
 {
@@ -664,7 +664,7 @@ int rxSndIopRead(void *dst, u_int iopAddr, int size)
                 sceSifReceiveData rd;
 
                 FlushCache(0);
-                while (sceSifGetOtherData(&rd, (void *)(uintptr_t)iopAddr, dst, size, 0) < 0)
+                while (sceSifGetOtherData(&rd, YamiPan_IopPointer(iopAddr), dst, size, 0) < 0)
                     ;
                 FlushCache(0);
                 return 1;

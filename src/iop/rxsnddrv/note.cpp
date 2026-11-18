@@ -195,7 +195,7 @@ static const int RxSndDrvNoteRate[0x100] = {
 
 static u_char *IopPointer(u_int iop)
 {
-    return (u_char *)(uintptr_t)iop;
+    return (u_char *)YamiPan_IopPointer(iop);
 }
 
 static void RxSndDrvNoteStop(RxSndDrvNote *note, int keyOff);
