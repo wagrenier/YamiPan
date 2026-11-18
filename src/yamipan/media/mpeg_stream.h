@@ -39,10 +39,11 @@ private:
         void *argument;
     };
 
+    // A packet whose stream id and sub-stream header, masked, equal key goes to function.
     struct StreamCallback
     {
-        sceMpegStrType type;
-        int channel;
+        std::uint64_t key;
+        std::uint64_t mask;
         sceMpegCallback function;
         void *argument;
     };
@@ -50,8 +51,7 @@ private:
     void clearPlayback();
     int deliverPayload(sceMpeg &mpeg, const std::uint8_t *packet, int size);
     void readSequenceHeader(sceMpeg &mpeg, std::span<const std::uint8_t> data);
-    [[nodiscard]] const StreamCallback *videoCallback() const;
-    [[nodiscard]] const StreamCallback *audioCallback(int channel) const;
+    [[nodiscard]] const StreamCallback *findStream(std::uint64_t key) const;
     void requestData(sceMpeg &mpeg);
 
     MpegDecoder m_decoder;

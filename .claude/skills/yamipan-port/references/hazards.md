@@ -343,6 +343,13 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
 
 - **MinGW must be on PATH** or `cc1plus` fails silently: use `build.py`. Shader builds can hit a file
   lock: rerun.
+- **HLSL keeps names a C++ reader would not expect** (2026-11-14). Symptom: shadercross fails with
+  `modifiers must appear before type` on a parameter, and `expected expression` where it is used. Cause:
+  `point` (like `line`, `triangle`, `linear`, `centroid`, `sample`) is an HLSL keyword, a geometry shader's
+  primitive; `lit` is an intrinsic, so a function of that name is an overload of it. Fix: other names
+  (`pointSource`, `lightedColor`). Check a shader edit with the shadercross CLI before a full build:
+  `shadercross <file>.hlsl -o <out>.spv -I resources/shaders/hlsl` (and `.dxil`, `.msl`), the CLI from
+  `extern/shadercross/windows` of a sibling (MioPan).
 - **layoutcheck compiles every header alone**: a header relying on its .c's includes fails there.
 - **A flag in CMakeLists.txt can break Visual Studio while every check stays green** (2026-11-05).
   Symptom: `D8021 invalid numeric argument '/Wextra'` on every Pan-layer file. Cause: layoutcheck
@@ -399,6 +406,18 @@ dated, in the section they belong to. GhidraMCP traps live in ghidra.md.
   the game runs on its own thread (Windows' modal move loop froze single-threaded runs).
 - **Movies**: a decode loop that drops its frame on a starved demuxer freezes for good: decode into a
   spare frame, swap on success.
+- **A movie's sound underruns though the decoder keeps time** (2026-11-13, game/movieplayer.cpp). Symptom:
+  `rxsnddrv: ADPCM .. underrun` near the same stream position each run, the audio ring at 0 while the video
+  ring is full. Cause: the demux stops at the first video packet the ring refuses, and FS2's PSS put their
+  audio up to ~1.5 s behind their video in the file, more than the ROM's 0x30000 ring holds. Fix: the host
+  decoder may hold `kMovieHostVideoLead` beyond the ring; a walk of the file (stream id + PTS per packet,
+  the demux held at ring + lead) sizes it before any run. Do not grow the ring: the work area can be a
+  borrowed game buffer.
+- **`feedIpu` spins forever once its ring is spent** (2026-11-13). Symptom: a movie's sound keys on, underruns
+  after a few KB, nothing follows; the game is stuck in `MoviePlayer::feedIpu`. Cause: its loop demuxes while
+  the video ring holds under 4 KB; behind a full audio ring the demux takes nothing, and the spinning game
+  thread starves the sound update that would drain it. Fix: on the host the loop also needs the decoder's
+  own backlog short (`YamiPanMpegVideoPending`), and `isDrained` waits for it, or the film ends early.
 - **A host convention on top of a ROM-faithful port** (a vector negated twice; a host shader replacing
   microcode drops its culling): when a picture is mirrored or misplaced, list every sign / transform
   between the ROM's value and the shader.

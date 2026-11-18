@@ -14,9 +14,7 @@ struct VSOutput
     float vFog : TEXCOORD2;
 };
 
-// The texture is looked up by the eye's ray bounced off the normal, in the world's x, y (z is up), and the vertex takes
-// the first light's colour, none on a face turned from that light. Only y and z of the light count: the ROM has loaded
-// the level over the row with x (the integer reads as 0).
+// VU1 0x77f, model_light.hlsli's reflectionUv and reflectionColor at the vertex.
 void reflection(StaticInput input, float3 position, float3 normal, inout VSOutput output)
 {
     float normalLength = sqrt(dot(normal, normal));
@@ -24,15 +22,8 @@ void reflection(StaticInput input, float3 position, float3 normal, inout VSOutpu
     {
         normal /= normalLength;
     }
-    float3 toEye = uEye.xyz - position;
-    float along = dot(toEye, normal);
-    float3 ray = toEye - 2.0 * along * normal;
-    float rayLength = sqrt(dot(ray, ray));
-    output.vUV = rayLength > 0.0 ? ray.xy / rayLength * 0.5 + 0.5 : float2(0.5, 0.5);
-
-    float facing = input.iLightDirection0.y * normal.y + input.iLightDirection0.z * normal.z;
-    float3 lit = floor(clamp(128.0 * input.iLightColor0.xyz * input.iLightColor2.w, 0.0, 255.0)) / 255.0; // loi 128
-    output.vColor = float4(facing > 0.0 ? lit : float3(0.0, 0.0, 0.0), kVertexAlpha);
+    output.vUV = reflectionUv(uEye.xyz, position, normal);
+    output.vColor = float4(reflectionColor(instanceLightsOf(input), normal), kVertexAlpha);
 }
 
 VSOutput main(StaticInput input)

@@ -1,10 +1,11 @@
 /*
  * What VU1 does to a model's vertex, on the GPU: ModelRenderer keeps each batch of the model file here once
  * (ModelStaticVertex, ModelSkinnedVertex with SKINNED defined) and hands over, per run of batches, the instance that
- * places and lights it (ModelInstance) and, skinned, the palette.
- * This is model_renderer.cpp's litColor / addPointLight / reflectionVertex / spotVertex / shadowVertex, which still
- * do the same for batches too large to cache: change both together.
+ * places and lights it (ModelInstance) and, skinned, the palette. The lighting itself is model_light.hlsli's, which
+ * model_static_pixel.hlsli runs per pixel instead.
  */
+
+#include "model_light.hlsli"
 
 // The prefix is model.vert's ModelVertexUniforms, so one push serves both paths.
 cbuffer ModelVertexUniforms : register(b0, space1)
@@ -48,17 +49,31 @@ struct StaticInput
 #endif
 };
 
-static const uint kFlagUnlit = 1;
-static const uint kFlagPoint = 2;
-static const uint kFlagPointFlat = 4;
-static const uint kFlagFirstBoneOnly = 8;
-
-static const float kVertexColorUnit = 255.0; // LOI at 0x57e, 0x32b
-static const float kVertexAlpha = 128.0 / 255.0; // VU address 25's w: every vertex's alpha, as a UBYTE4_NORM
+InstanceLights instanceLightsOf(StaticInput input)
+{
+    InstanceLights lights;
+    lights.ambient = input.iAmbient;
+    lights.colors[0] = input.iLightColor0;
+    lights.colors[1] = input.iLightColor1;
+    lights.colors[2] = input.iLightColor2;
+    lights.directions[0] = input.iLightDirection0;
+    lights.directions[1] = input.iLightDirection1;
+    lights.directions[2] = input.iLightDirection2;
+    return lights;
+}
 
 uint flagsOf(StaticInput input)
 {
     return (uint)input.iAmbient.w;
+}
+
+PointLight passPointLight()
+{
+    PointLight light;
+    light.position = uPointPosition;
+    light.color = uPointColor;
+    light.shade = uPointShade;
+    return light;
 }
 
 // A vertex in the world, with its normal as VU1 takes it.
@@ -131,38 +146,15 @@ float fogOf(float w)
     return clamp(uFog.x + uFog.y / w, uFog.w, uFog.z) / 255.0; // VU1 0x243, 0x247
 }
 
-// Kernel 0x545 (0x59a flat): what the point light adds to the vertex colour, ahead of the multiply.
-float3 pointLight(float3 position, float3 normal, bool flat)
-{
-    float3 toLight = uPointPosition.xyz - position;
-    float distance = sqrt(dot(toLight, toLight));
-    float strength = max(0.0, uPointPosition.w + uPointColor.w * distance);
-    if (flat)
-    {
-        return kVertexColorUnit * uPointColor.xyz * strength;
-    }
-    float facing = distance > 0.0 ? dot(normal, toLight) / distance : 0.0;
-    float amount = max(0.0, facing) * strength;
-    return kVertexColorUnit * (uPointShade.xyz * strength + uPointColor.xyz * amount);
-}
-
-// VU1 0x2a9, 0x2bb: the vertex colour times ambient + each light's colour * max(0, its direction . the normal),
-// clamped to 255 and cut to a byte as the host's vertex was; alpha 0x80. Unlit (0x29e): the colour as it is.
+// VU1 0x2a9, 0x2bb (model_light.hlsli's lightedColor), clamped to 255 and cut to a byte as the host's vertex was;
+// alpha 0x80. Unlit (0x29e): the colour as it is.
 float4 litColor(StaticInput input, float3 position, float3 normal)
 {
-    uint flags = flagsOf(input);
     float3 color = float3(input.aColor.rgb);
-    if ((flags & kFlagUnlit) != 0)
+    if ((flagsOf(input) & kFlagUnlit) != 0)
     {
         return float4(color / 255.0, kVertexAlpha);
     }
-    if ((flags & kFlagPoint) != 0)
-    {
-        color += pointLight(position, normal, (flags & kFlagPointFlat) != 0);
-    }
-    float3 sum = input.iAmbient.xyz;
-    sum += input.iLightColor0.xyz * max(0.0, dot(normal, input.iLightDirection0.xyz));
-    sum += input.iLightColor1.xyz * max(0.0, dot(normal, input.iLightDirection1.xyz));
-    sum += input.iLightColor2.xyz * max(0.0, dot(normal, input.iLightDirection2.xyz));
-    return float4(floor(clamp(color * sum, 0.0, 255.0)) / 255.0, kVertexAlpha);
+    float3 lighted = lightedColor(instanceLightsOf(input), passPointLight(), color, position, normal);
+    return float4(floor(clamp(lighted, 0.0, 255.0)) / 255.0, kVertexAlpha);
 }

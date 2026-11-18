@@ -38,6 +38,13 @@ constexpr int kMovieDemuxChunk = 0x4000;
 // feedIpu keeps this much video ahead of the IPU and sends at most this
 // much per DMA; isDrained calls the video ring empty below it.
 constexpr int kMovieIpuBlock = 0x1000;
+// PC: the video the host decoder may hold beyond the ROM's ring. FS2's
+// films put their audio up to ~1.5 s behind their video in the file, more
+// than the ring's 0x30000 hold at their bit rates: held to the ring alone,
+// the demux reached the audio late and the boot film's sound underran (a
+// walk of opmv01EU / MV01EU: worst audio lead -0.45 / -0.19 s with the
+// ring, +0.46 / +0.93 s with 0x40000 more). Host memory, not the work area.
+constexpr int kMovieHostVideoLead = 0x50000;
 // The file ring is spent when fewer bytes than these are left: demux
 // (file end) and feedIpu (the end code).
 constexpr int kMovieFileEndSlack = 0x10;
@@ -52,8 +59,6 @@ constexpr int kMovieVolumeFull = 0x80;
 // prime draws the first picture into the movie's own buffer: tbp 0x700,
 // 512 x 512 at (0, 0), in the last packet list.
 constexpr int kMoviePrimeTbp = 0x700;
-// PC: see MoviePlayer::open.
-constexpr bool kMovieHostHasSound = false;
 constexpr int kMoviePrimeSize = 0x200;
 
 // The toIPU DMA: STR with tag transfer off (CHCR), its busy bit.
@@ -215,8 +220,13 @@ bool MoviePlayer::feedIpu(sceMpeg *mp, sceMpegCbData *data)
     }
     SignalSema(m_sema);
 
+    // PC: the decoder lacks video only when what it holds beyond the ring
+    // (kMovieHostVideoLead) is short too. Testing the ring alone, a ring the
+    // lead had spent kept this loop demuxing behind a full audio ring for
+    // good (MV01EU, whose sound starts ahead of its pictures).
     int filled = m_videoRing->filled();
-    while (filled < kMovieIpuBlock && !(m_state & MovieState_FileEnd) && !sceMpegIsEnd(mp)) {
+    while (filled < kMovieIpuBlock && YamiPanMpegVideoPending() < kMovieIpuBlock &&
+           !(m_state & MovieState_FileEnd) && !sceMpegIsEnd(mp)) {
         demux(kMovieDemuxChunk);
         if (m_state & MovieState_Abort)
             return false;
@@ -232,9 +242,12 @@ bool MoviePlayer::feedIpu(sceMpeg *mp, sceMpegCbData *data)
     n &= ~15;
     if (n > kMovieIpuBlock)
         n = kMovieIpuBlock;
-    // PC: the host decoder took the stream from the demuxer; only what it
-    // has parsed leaves the ring, so the ring's room paces the demux.
-    int parsed = (m_videoRing->filled() - YamiPanMpegVideoPending()) & ~15;
+    // PC: the host decoder took the stream from the demuxer and keeps its
+    // own copy, so what leaves the ring is what it has parsed plus what it
+    // may hold beyond the ring (kMovieHostVideoLead); the ring's room still
+    // paces the demux.
+    int held = YamiPanMpegVideoPending() - kMovieHostVideoLead;
+    int parsed = (m_videoRing->filled() - (held > 0 ? held : 0)) & ~15;
     if (n > parsed)
         n = parsed < 0 ? 0 : parsed;
     u_char *src = m_videoRing->readPtr();
@@ -282,6 +295,10 @@ bool MoviePlayer::isDrained()
             drained = false;
     }
     if (m_videoRing->filled() >= kMovieIpuBlock)
+        drained = false;
+    // PC: the video the host decoder holds beyond the ring (feedIpu) is
+    // still to be shown.
+    if (YamiPanMpegVideoPending() >= kMovieIpuBlock)
         drained = false;
     return drained;
 }
@@ -588,14 +605,8 @@ int MoviePlayer::open(const char *name)
     sceMpegAddCallback(&m_mpeg, sceMpegCbStopDMA, movieStopDmaCallback, this);
     sceMpegAddCallback(&m_mpeg, sceMpegCbRestartDMA, movieRestartDmaCallback, this);
 
-    // PC: no feeders until the IOP host exists (sdk/sif.cpp answers every RPC
-    // with nothing, so a sink's blocks never drain and its ring would stop the
-    // demux for good). receiveAudio drops a feederless channel, and the movie
-    // ends on its video alone. Remove with the audio milestone (open-items).
-    if (kMovieHostHasSound) {
-        for (int i = 0; i < m_channels; i++)
-            m_feeders[i] = new SoundFeeder();
-    }
+    for (int i = 0; i < m_channels; i++)
+        m_feeders[i] = new SoundFeeder();
     m_state |= MovieState_Open;
     return 0;
 }

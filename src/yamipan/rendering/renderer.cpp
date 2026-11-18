@@ -382,7 +382,8 @@ void Renderer::recordScene(SDL_GPUCommandBuffer *commands, const Frame &frame, c
         recordUi(commands, frame, layout, nextDraw, pass.uiDrawsBefore, !cleared);
         cleared = true;
         nextDraw = pass.uiDrawsBefore;
-        m_models.recordPass(commands, frame, pass, m_scene.get(), m_white.get(), layout);
+        m_models.recordPass(commands, frame, pass, m_scene.get(), m_white.get(), layout,
+                            m_config.display.perPixelLighting);
     }
     recordUi(commands, frame, layout, nextDraw, frame.draws.size(), !cleared);
 }

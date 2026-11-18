@@ -73,6 +73,10 @@ struct DisplaySettings
     // one's (rendering/frame_blend.h): the game still runs at 25 frames a second, the picture moves at the monitor's
     // rate.
     bool smoothMotion = true;
+    // The models' lighting, the spot's reach and the shadows' strength worked out for each pixel from the vertices'
+    // values (rendering/model_renderer.h), not for each vertex as VU1 does. Off by default: the PS2's look (the user,
+    // 2026-11-14).
+    bool perPixelLighting = false;
 
     // The output transform: all at their defaults, the present pass is skipped.
     HdrMode hdrMode = HdrMode::Off;

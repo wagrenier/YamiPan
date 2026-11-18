@@ -63,18 +63,32 @@ struct ModelDrawUniforms
     float draw[4];
 };
 
-// uDraw.x of model_static.vert and model_static_projected.vert.
+// uDraw.x of model_static.vert and model_static_projected.vert, and uParams.w of model_pixel.frag and
+// model_pixel_projected.frag, which have no uDraw.
 constexpr float kDrawColor = 0.0f;
 constexpr float kDrawReflection = 1.0f;
 constexpr float kDrawSpot = 0.0f;
 constexpr float kDrawShadow = 1.0f;
 
-// Mirrors ModelFragmentUniforms in model.frag.hlsl.
+// Mirrors ModelFragmentUniforms in model.frag.hlsl (params[3] is the _pixel shaders' pass, as uDraw.x).
 struct ModelFragmentUniforms
 {
     float fogColor[4];
     float params[4];
 };
+
+// Mirrors ModelPixelUniforms in model_pixel.hlsli: what the per-pixel lighting takes of the pass, the values of
+// ModelVertexUniforms of the same names.
+struct ModelPixelUniforms
+{
+    std::array<float, 4> eye;
+    std::array<float, 4> pointPosition;
+    std::array<float, 4> pointColor;
+    std::array<float, 4> pointShade;
+    std::array<float, 4> spotScale;
+    std::array<float, 4> spotFalloff;
+};
+static_assert(sizeof(ModelPixelUniforms) == 6 * 16);
 
 // The matrix from the game's screen space, in rows, to the host's clip space. Screen units are the frame's
 // around its centre, y down. Depth keeps the GS's order, zmax at the near plane and zmin at the far one, tested
@@ -623,6 +637,19 @@ ModelRenderer::ModelRenderer(Renderer &renderer, gpu::Device &device) : m_render
                                                 {.samplers = 0, .uniformBuffers = 2, .storageBuffers = 1});
     m_skinnedProjectedVertexShader = m_device.loadShader("model_skinned_projected.vert", SDL_GPU_SHADERSTAGE_VERTEX,
                                                          {.samplers = 0, .uniformBuffers = 2, .storageBuffers = 1});
+    m_staticPixelVertexShader = m_device.loadShader("model_static_pixel.vert", SDL_GPU_SHADERSTAGE_VERTEX,
+                                                    {.samplers = 0, .uniformBuffers = 2});
+    m_staticProjectedPixelVertexShader = m_device.loadShader(
+        "model_static_projected_pixel.vert", SDL_GPU_SHADERSTAGE_VERTEX, {.samplers = 0, .uniformBuffers = 2});
+    m_skinnedPixelVertexShader = m_device.loadShader("model_skinned_pixel.vert", SDL_GPU_SHADERSTAGE_VERTEX,
+                                                     {.samplers = 0, .uniformBuffers = 2, .storageBuffers = 1});
+    m_skinnedProjectedPixelVertexShader =
+        m_device.loadShader("model_skinned_projected_pixel.vert", SDL_GPU_SHADERSTAGE_VERTEX,
+                            {.samplers = 0, .uniformBuffers = 2, .storageBuffers = 1});
+    m_pixelFragmentShader =
+        m_device.loadShader("model_pixel.frag", SDL_GPU_SHADERSTAGE_FRAGMENT, {.samplers = 1, .uniformBuffers = 2});
+    m_pixelProjectedFragmentShader = m_device.loadShader("model_pixel_projected.frag", SDL_GPU_SHADERSTAGE_FRAGMENT,
+                                                         {.samplers = 1, .uniformBuffers = 2});
     m_palettes.usage = SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ;
 }
 
@@ -1659,7 +1686,7 @@ SDL_GPUGraphicsPipeline *ModelRenderer::shadowPipeline()
 // A cached batch's pipeline: its vertices from a chunk (slot 0), its instance (slot 1), the depth as the other passes,
 // and the rasterizer culling what facesEye would. Sixteen attributes at most (SDL's limit): a skinned vertex's bones
 // and weights take the last two.
-SDL_GPUGraphicsPipeline *ModelRenderer::createStaticPipeline(bool skinned, bool projected,
+SDL_GPUGraphicsPipeline *ModelRenderer::createStaticPipeline(bool skinned, bool projected, bool perPixel,
                                                              const SDL_GPUColorTargetDescription &target,
                                                              bool writesDepth, SDL_GPUCullMode cull)
 {
@@ -1690,13 +1717,24 @@ SDL_GPUGraphicsPipeline *ModelRenderer::createStaticPipeline(bool skinned, bool 
         {15, 0, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4, offsetof(ModelSkinnedVertex, weights)},
     }};
 
-    SDL_GPUShader *const vertexShader =
-        skinned ? (projected ? m_skinnedProjectedVertexShader : m_skinnedVertexShader).get()
-                : (projected ? m_staticProjectedVertexShader : m_staticVertexShader).get();
+    SDL_GPUShader *vertexShader = nullptr;
+    SDL_GPUShader *fragmentShader = nullptr;
+    if (perPixel)
+    {
+        vertexShader = skinned ? (projected ? m_skinnedProjectedPixelVertexShader : m_skinnedPixelVertexShader).get()
+                               : (projected ? m_staticProjectedPixelVertexShader : m_staticPixelVertexShader).get();
+        fragmentShader = projected ? m_pixelProjectedFragmentShader.get() : m_pixelFragmentShader.get();
+    }
+    else
+    {
+        vertexShader = skinned ? (projected ? m_skinnedProjectedVertexShader : m_skinnedVertexShader).get()
+                               : (projected ? m_staticProjectedVertexShader : m_staticVertexShader).get();
+        fragmentShader = projected ? m_spotFragmentShader.get() : m_fragmentShader.get();
+    }
 
     SDL_GPUGraphicsPipelineCreateInfo info{};
     info.vertex_shader = vertexShader;
-    info.fragment_shader = projected ? m_spotFragmentShader.get() : m_fragmentShader.get();
+    info.fragment_shader = fragmentShader;
     info.vertex_input_state.vertex_buffer_descriptions = buffers.data();
     info.vertex_input_state.num_vertex_buffers = buffers.size();
     info.vertex_input_state.vertex_attributes = attributes.data();
@@ -1720,35 +1758,38 @@ SDL_GPUGraphicsPipeline *ModelRenderer::createStaticPipeline(bool skinned, bool 
     return pipeline;
 }
 
-SDL_GPUGraphicsPipeline *ModelRenderer::staticPipelineFor(bool skinned, BlendMode blend, bool writesDepth,
-                                                          SDL_GPUCullMode cull)
+SDL_GPUGraphicsPipeline *ModelRenderer::staticPipelineFor(bool skinned, bool perPixel, BlendMode blend,
+                                                          bool writesDepth, SDL_GPUCullMode cull)
 {
-    const auto key = std::make_tuple(skinned, blend, writesDepth, cull);
+    const auto key = std::make_tuple(skinned, perPixel, blend, writesDepth, cull);
     if (const auto found = m_staticPipelines.find(key); found != m_staticPipelines.end())
         return found->second.get();
 
     SDL_GPUColorTargetDescription target{};
     target.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
     target.blend_state = blendStateOf(PipelineKey{blend, ColorMask::All});
-    SDL_GPUGraphicsPipeline *const pipeline = createStaticPipeline(skinned, false, target, writesDepth, cull);
+    SDL_GPUGraphicsPipeline *const pipeline =
+        createStaticPipeline(skinned, false, perPixel, target, writesDepth, cull);
     m_staticPipelines.emplace(key, gpu::GraphicsPipeline(m_device.get(), pipeline));
     return pipeline;
 }
 
-SDL_GPUGraphicsPipeline *ModelRenderer::staticProjectedPipeline(bool skinned, ProjectedPass pass, SDL_GPUCullMode cull)
+SDL_GPUGraphicsPipeline *ModelRenderer::staticProjectedPipeline(bool skinned, bool perPixel, ProjectedPass pass,
+                                                                SDL_GPUCullMode cull)
 {
-    const auto key = std::make_tuple(skinned, pass, cull);
+    const auto key = std::make_tuple(skinned, perPixel, pass, cull);
     if (const auto found = m_staticProjectedPipelines.find(key); found != m_staticProjectedPipelines.end())
         return found->second.get();
 
     SDL_GPUGraphicsPipeline *const pipeline = createStaticPipeline(
-        skinned, true, pass == ProjectedPass::Spot ? spotTarget() : shadowTarget(), false, cull);
+        skinned, true, perPixel, pass == ProjectedPass::Spot ? spotTarget() : shadowTarget(), false, cull);
     m_staticProjectedPipelines.emplace(key, gpu::GraphicsPipeline(m_device.get(), pipeline));
     return pipeline;
 }
 
 void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &frame, const ModelPass &pass,
-                               SDL_GPUTexture *scene, SDL_GPUTexture *white, const PictureLayout &layout)
+                               SDL_GPUTexture *scene, SDL_GPUTexture *white, const PictureLayout &layout,
+                               bool perPixel)
 {
     SDL_GPUColorTargetInfo target{};
     target.texture = scene;
@@ -1775,6 +1816,13 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
         ModelVertexUniforms vertexUniforms = passUniforms(pass, layout);
         SDL_PushGPUVertexUniformData(commands, 0, &vertexUniforms, sizeof(vertexUniforms));
         const bool counterClockwise = frontTurnsCounterClockwise(vertexUniforms.worldToClip);
+        if (perPixel)
+        {
+            const ModelPixelUniforms pixelUniforms{pass.lights.eye,        pass.lights.pointPosition,
+                                                   pass.lights.pointColor, pass.lights.pointShade,
+                                                   pass.lights.spotScale,  pass.lights.spotFalloff};
+            SDL_PushGPUFragmentUniformData(commands, 1, &pixelUniforms, sizeof(pixelUniforms));
+        }
 
         // What is bound, so that a run of batches binds each thing once.
         SDL_GPUGraphicsPipeline *boundPipeline = nullptr;
@@ -1826,7 +1874,7 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
         };
         const auto usable = [](const Image *picture) { return picture != nullptr && picture->texture != nullptr; };
         // The passes VU1 kicks after the first one take a picture of their own and none of the fog's colour.
-        const auto bindPicture = [&](const Image &picture, bool repeat, float alphaRef) {
+        const auto bindPicture = [&](const Image &picture, bool repeat, float alphaRef, float which) {
             SDL_GPUTextureSamplerBinding binding{};
             binding.texture = picture.texture->get();
             binding.sampler = m_renderer.samplerFor(true, repeat);
@@ -1834,6 +1882,7 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
 
             ModelFragmentUniforms overUniforms{};
             overUniforms.params[0] = alphaRef;
+            overUniforms.params[3] = which;
             SDL_PushGPUFragmentUniformData(commands, 0, &overUniforms, sizeof(overUniforms));
         };
 
@@ -1868,6 +1917,7 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
             fragmentUniforms.params[0] = draw.blended ? 0.0f : kOpaqueAlphaRef;
             fragmentUniforms.params[1] = draw.blended && draw.blend == BlendMode::DestinationBoost ? 1.0f : 0.0f;
             fragmentUniforms.params[2] = draw.alphaScale;
+            fragmentUniforms.params[3] = draw.reflection ? kDrawReflection : kDrawColor;
             SDL_PushGPUFragmentUniformData(commands, 0, &fragmentUniforms, sizeof(fragmentUniforms));
 
             if (draw.batchCount == 0)
@@ -1881,18 +1931,18 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
                 SDL_DrawGPUPrimitives(renderPass, draw.vertexCount, 1, draw.firstVertex, 0);
 
                 const auto drawOver = [&](SDL_GPUGraphicsPipeline *over, const Image *picture,
-                                          const VertexStream &stream, bool repeat, float alphaRef,
+                                          const VertexStream &stream, bool repeat, float alphaRef, float which,
                                           std::uint32_t vertexCount, std::uint32_t first) {
                     if (over == nullptr || !usable(picture) || vertexCount == 0)
                         return;
                     bindPipeline(over);
                     bindStream(stream);
-                    bindPicture(*picture, repeat, alphaRef);
+                    bindPicture(*picture, repeat, alphaRef, which);
                     SDL_DrawGPUPrimitives(renderPass, vertexCount, 1, first, 0);
                 };
-                drawOver(shadowPipeline(), pass.shadowImage.get(), m_shadowVertices, false, 0.0f,
+                drawOver(shadowPipeline(), pass.shadowImage.get(), m_shadowVertices, false, 0.0f, kDrawShadow,
                          draw.shadowVertexCount, draw.firstShadowVertex);
-                drawOver(spotPipeline(), pass.spotImage.get(), m_spotVertices, true, kSpotAlphaRef,
+                drawOver(spotPipeline(), pass.spotImage.get(), m_spotVertices, true, kSpotAlphaRef, kDrawSpot,
                          draw.spotVertexCount, draw.firstSpotVertex);
                 continue;
             }
@@ -1904,8 +1954,8 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
             pushDraw(draw.reflection ? kDrawReflection : kDrawColor, 0.0f);
             for (const ModelBatchDraw &batch : batches)
             {
-                SDL_GPUGraphicsPipeline *const pipeline =
-                    staticPipelineFor(batch.skinned, blend, draw.writesDepth, cullModeOf(batch, counterClockwise));
+                SDL_GPUGraphicsPipeline *const pipeline = staticPipelineFor(
+                    batch.skinned, perPixel, blend, draw.writesDepth, cullModeOf(batch, counterClockwise));
                 if (pipeline == nullptr || !bindChunk(batch.chunk))
                     continue;
                 bindPipeline(pipeline);
@@ -1916,13 +1966,13 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
             if (usable(shadowImage) &&
                 std::ranges::any_of(batches, [](const ModelBatchDraw &batch) { return batch.shadows != 0; }))
             {
-                bindPicture(*shadowImage, false, 0.0f);
+                bindPicture(*shadowImage, false, 0.0f, kDrawShadow);
                 for (const ModelBatchDraw &batch : batches)
                 {
                     if (batch.shadows == 0)
                         continue;
-                    SDL_GPUGraphicsPipeline *const pipeline =
-                        staticProjectedPipeline(batch.skinned, ProjectedPass::Shadow, cullModeOf(batch, counterClockwise));
+                    SDL_GPUGraphicsPipeline *const pipeline = staticProjectedPipeline(
+                        batch.skinned, perPixel, ProjectedPass::Shadow, cullModeOf(batch, counterClockwise));
                     if (pipeline == nullptr || !bindChunk(batch.chunk))
                         continue;
                     bindPipeline(pipeline);
@@ -1940,14 +1990,14 @@ void ModelRenderer::recordPass(SDL_GPUCommandBuffer *commands, const Frame &fram
             if (usable(spotImage) &&
                 std::ranges::any_of(batches, [](const ModelBatchDraw &batch) { return batch.spotted; }))
             {
-                bindPicture(*spotImage, true, kSpotAlphaRef);
+                bindPicture(*spotImage, true, kSpotAlphaRef, kDrawSpot);
                 pushDraw(kDrawSpot, 0.0f);
                 for (const ModelBatchDraw &batch : batches)
                 {
                     if (!batch.spotted)
                         continue;
-                    SDL_GPUGraphicsPipeline *const pipeline =
-                        staticProjectedPipeline(batch.skinned, ProjectedPass::Spot, cullModeOf(batch, counterClockwise));
+                    SDL_GPUGraphicsPipeline *const pipeline = staticProjectedPipeline(
+                        batch.skinned, perPixel, ProjectedPass::Spot, cullModeOf(batch, counterClockwise));
                     if (pipeline == nullptr || !bindChunk(batch.chunk))
                         continue;
                     bindPipeline(pipeline);
