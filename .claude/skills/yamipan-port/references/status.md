@@ -1,6 +1,6 @@
 # YamiPan status (generated)
 
-Generated 2026-11-09 10:48 at commit `6a5467e` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
+Generated 2026-11-09 10:48 at commit `f313599` by `tools/reverse/status.py` (`refresh.py` runs it). Do not edit by hand.
 
 ## Ghidra seeding (one-time: sections.py --apply, libmatch.py --apply)
 
@@ -204,7 +204,7 @@ Least-named game-code regions (64 KB blocks):
 - verify: `game/gsluminance.cpp` 7/7 -- Was unassigned@002b6b90, between menuscene and prgmccard; only caller SightJack::drawPaletteView 0x1ff010 in game/stageparty.cpp, whose comment now points here.
 - verify: `game/gsutil.cpp` 12/12 -- Cut out of unassigned@00171300 and pinned 0x230980-0x231410 (batch 048: GsTexture::readTarget 0x231290, rena base Tim2Texture ctor 0x2e2920 / dtor 0x2e2810 / lo
 - verify: `game/heap.cpp` 17/17 -- Game code, not MSL: heap and RNG share one object (sdata 0x31a880..0x31a88c, bss 0x329970 then 0x3299c0, sbss 0x31ad80). All 17 functions written; batch 031 nam
-- verify: `game/helpscreen.cpp` 1/1 -- Split out of unassigned@002acff0 with game/skymist.cpp; the code went in with af16a58. Not seen: the smoke run does not open the help screen from the menus.
+- verify: `game/helpscreen.cpp` 1/1 -- Split out of unassigned@002acff0 with game/skymist.cpp; the code went in with 5a6a7e5. Not seen: the smoke run does not open the help screen from the menus.
 - verify: `game/itemphysics.cpp` 13/15 -- All of 0x23c010..0x23de20, batch 187 (draw renamed endFrame; getNodeFrame, getMeanVelocity, keepsMoving, placeNodes). New file game/itemphysics.h holds the clas
 - verify: `game/kunitoris.cpp` 93/93 -- Batch 229 named 0x2c81b0 kunitorisRandom (j randNext2, only the inline spawnGroup calls it), 0x2c7ee0 KunitorisGroup::copyPair, 0x2c7b70 / 0x2cab50 KunitorisDra
 - verify: `game/layoutpaths.cpp` 24/24 -- All 24 functions of 0x2ec160..0x2ec8e0 written, no new names, Ghidra untouched. Prototypes moved from gamehooks.h to layoutpaths.h, which gamehooks.h includes. 
