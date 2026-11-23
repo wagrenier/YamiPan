@@ -7,9 +7,10 @@ in C++, running natively on PC. It is the fourth such port, after MioPan (Fatal 
 > **Unofficial fan project.** YamiPan is not affiliated with, endorsed or sponsored by Sony
 > Interactive Entertainment. Forbidden Siren 2 and its names are the property of their owners.
 >
-> **No game files are included.** This repository holds no executable, no disc data, no BIOS and no
-> Sony SDK files. YamiPan does nothing without the game's own files, which you must dump from a disc
-> you own.
+> **No game files are included.** This repository holds no executable, no file from the disc and no
+> BIOS. The source was written by studying the game's executable, and carries the small tables and
+> strings its functions need. YamiPan does nothing without the game's own files, which you must dump
+> from a disc you own.
 
 ## Status
 
@@ -63,7 +64,7 @@ Settings (`yamipan.ini`), the log and memory cards go in `%APPDATA%\Mikompilatio
 | path | what it is |
 |---|---|
 | `src/game`, `src/rx`, `src/rena`, `src/sdpr2`, `src/sound`, `src/iop` | the game's own code, reconstructed |
-| `src/sdk` | the PS2 library calls the game makes, reimplemented on the platform layer |
+| `src/sdk` | the PS2 library calls the game makes, reimplemented on the platform layer; names, constants and struct layouts follow Sony's interfaces |
 | `src/yamipan` | the platform layer: SDL3 window and input, GPU renderer, audio, IOP and SPU2 |
 | `resources/shaders` | HLSL shaders and their compiled forms |
 | `tools/reverse` | the reverse-engineering tools, built around Ghidra and GhidraMCP (see its README) |
