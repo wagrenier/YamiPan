@@ -2,7 +2,9 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace yamipan::rendering
 {
@@ -388,6 +390,29 @@ std::vector<Slot> slotsOf(const std::vector<Entry> &entries, KeyOf keyOf)
     return slots;
 }
 
+// The keys with more placements in one frame than in the other. The n-th of a key pairs with the n-th of the other
+// frame, which holds only while the two have as many: a model drawn several times under one key (one owner, one
+// geometry: the copies of a piece of the stage) loses or gains a copy when one is culled, and the copies after it
+// would pair with their neighbours and be drawn between two places. Seen 2026-11-18 on stage 2: on 1 present in 20,
+// pieces drawn up to 280 units off, the stage seeming to jump. Their placements are drawn as they are.
+template <class Entry, class KeyOf>
+std::unordered_set<ModelPlacementKey, KeyHash> ambiguousKeys(const std::vector<Entry> &earlier,
+                                                             const std::vector<Entry> &later, KeyOf keyOf)
+{
+    std::unordered_map<ModelPlacementKey, std::int64_t, KeyHash> balance;
+    for (const Entry &entry : earlier)
+        balance[keyOf(entry)]--;
+    for (const Entry &entry : later)
+        balance[keyOf(entry)]++;
+    std::unordered_set<ModelPlacementKey, KeyHash> out;
+    for (const auto &[key, count] : balance)
+    {
+        if (count != 0)
+            out.insert(key);
+    }
+    return out;
+}
+
 } // namespace
 
 std::optional<float> FrameBlend::progress(const Frame &previous, const Frame &current, Clock::time_point now)
@@ -569,9 +594,11 @@ std::size_t FrameBlend::blendPlacements(const Frame &previous, const Frame &curr
             earlier.emplace(earlierSlots[index], index);
 
         const std::vector<Slot> slots = slotsOf(current.modelInstanceKeys, identity);
+        const std::unordered_set<ModelPlacementKey, KeyHash> ambiguous =
+            ambiguousKeys(previous.modelInstanceKeys, current.modelInstanceKeys, identity);
         for (std::size_t index = 0; index < slots.size(); index++)
         {
-            if (slots[index].key.owner == nullptr)
+            if (slots[index].key.owner == nullptr || ambiguous.contains(slots[index].key))
                 continue;
             const auto found = earlier.find(slots[index]);
             if (found == earlier.end())
@@ -593,10 +620,12 @@ std::size_t FrameBlend::blendPlacements(const Frame &previous, const Frame &curr
         earlier.emplace(earlierSlots[index], index);
 
     const std::vector<Slot> slots = slotsOf(current.modelPaletteRuns, runKey);
+    const std::unordered_set<ModelPlacementKey, KeyHash> ambiguous =
+        ambiguousKeys(previous.modelPaletteRuns, current.modelPaletteRuns, runKey);
     for (std::size_t index = 0; index < slots.size(); index++)
     {
         const ModelPaletteRun &run = current.modelPaletteRuns[index];
-        if (run.key.owner == nullptr)
+        if (run.key.owner == nullptr || ambiguous.contains(run.key))
             continue;
         const auto found = earlier.find(slots[index]);
         if (found == earlier.end())

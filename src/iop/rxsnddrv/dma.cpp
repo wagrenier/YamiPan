@@ -99,13 +99,13 @@ void RxSndDrvDmaProc(void)
             {
             case RXSNDDRV_DMA_IOP_TO_SPU:
                 size = e->m_size;
-                iop  = (u_char *)(uintptr_t)e->m_b;
+                iop  = (u_char *)YamiPan_IopPointer(e->m_b);
                 spu  = e->m_a;
                 mode = 0;
                 break;
             case RXSNDDRV_DMA_SPU_TO_IOP:
                 size = e->m_size;
-                iop  = (u_char *)(uintptr_t)e->m_a;
+                iop  = (u_char *)YamiPan_IopPointer(e->m_a);
                 spu  = e->m_b;
                 mode = 1;
                 break;

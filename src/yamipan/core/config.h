@@ -71,7 +71,7 @@ struct DisplaySettings
     PresentMode presentMode = PresentMode::VSync;
     // Between two game frames, the cameras, lights, models and bones blend from the older one's places to the newer
     // one's (rendering/frame_blend.h): the game still runs at 25 frames a second, the picture moves at the monitor's
-    // rate.
+    // rate. Only at game_rate 25: at 50 or 60 the game's own frames are shown as they are (Renderer::blendsFrames).
     bool smoothMotion = true;
     // The models' lighting, the spot's reach and the shadows' strength worked out for each pixel from the vertices'
     // values (rendering/model_renderer.h), not for each vertex as VU1 does. Off by default: the PS2's look (the user,

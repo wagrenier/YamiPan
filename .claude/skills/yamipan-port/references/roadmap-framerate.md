@@ -281,7 +281,7 @@ whole minigame in 25 Hz frames, presses kept).
 `palEase(rate)` (game/gamerate.h) is the linear ease's form, 1 - (1 - rate)^share, the rate itself at 25; a rate of 1
 (a snap) stays a snap. The navigation menu and the locks' `frame()` have no frame rule of their own (tweens, buttons).
 
-**What is left:** every row of framerate-inventory.md is converted. Kept at 25 Hz steps on purpose (exact, not smooth
+**What is left:** every row of framerate-inventory.md is converted. Kept at 25 Hz steps on purpose (exact; items and critters drawn between steps since 2026-11-18, not smooth
 at 50): item physics, critters, Kunitoris, UI tracks and tweens, sprite frames. Not read: the 22 time-based files
 beyond their clock reads (framerate-inventory.md "To check"). Not run at 50: game over, the sight-jack, Kunitoris, the
 locks, cars, cut scenes, menus and the map; a memory card save's play time.
@@ -329,6 +329,41 @@ which slows the game, since the master clock adds a frame's ticks whatever the f
 kind). Measured at 25 and 50: no late frame in either view (1.00 field a frame at 50, 2.00 at 25); first-person
 walking 120.0 units in its first second at 25 and 120.9 at 50, 381 / 387 in 4 s. The first-person walk is slower than
 the third-person one in the ROM's own code (about 120 against 262 units in the first second, at 25).
+
+## Native frames at 50 / 60: smooth motion only at 25 (2026-11-18)
+
+The user, running `game_rate = 60` with Smooth motion on: the camera should move at a real 60 fps, and the stage
+moved around on some frames. Measured on stage 2 at 60 (40 s, the walk script x 2.4, `YAMIPAN_BLEND_LOG`): nearly
+every present was a new game frame drawn about a third of the way from the one before, so the blend only held the
+picture two thirds of a frame back. 49 presents failed the cut test and jumped to the newer frame. On 102 presents (1
+in 20) pieces of the stage were drawn between two copies of themselves, up to 280 units apart: a model drawn
+several times under one `ModelPlacementKey` (one owner, one geometry) loses or gains a copy when one is culled, and
+the n-th-with-n-th pairing then matches each later copy with its neighbour (samePart's 300 units let it through).
+
+**Now:** `Renderer::blendsFrames()` = Smooth motion on **and** game_rate 25 (`Renderer::kRomGameRate`). At 50 / 60
+each frame is shown as it comes, newest first, nothing blended, no frame of delay; the overlay greys the option out
+with the rate in its tooltip. At 25, `FrameBlend::blendPlacements` skips every key whose count differs between the
+two frames (`ambiguousKeys`, instances and palette runs): those placements are drawn as they are. The `[blend]` log
+line says why a present was not blended (`off`, `unpaired`, `passes`, `cut`).
+
+**Seen:** at 60, 1,975 presents, 1,928 new frames, none blended; while walking the main eye moves every frame (1,119
+frames, mean 7.6 units, 4 steps over 1.6 times the one before, the walk's turns). At 25, 2,123 of 2,228 presents
+blended, 1,001 of 1,007 placements on average (the rest the ambiguous ones). Shots at both: the girl in the rain.
+
+**Thrown items and critters drawn between their 25 Hz steps (2026-11-18, the user: "yes").** Their simulations stay
+in whole 25 Hz steps (exact, the ROM's), and what is drawn moves every frame, one 25 Hz frame late: `palDrawShare()`
+(game/gamerate.h) is the master clock's ticks past the last 25 Hz frame / 12 (1 at 25), `palBlendMatrix` a
+placement's turn by slerp, axis lengths and origin in a line (`to` bit for bit at 1). `ItemPhysics` keeps the body's
+last two step matrices (`m_steps`, from `setMoving(true)` above 25); its own reads (`heightOverFloor`, the rest)
+take the body's (`bodyMatrix`), the owner's matrix is drawn between (`drawBetweenSteps`, every frame from
+`endFrame`), and any `setMoving` puts the body's back first. A `Critter` keeps its matrix before each step
+(`keepPlace`, from `CritterNest::update`) and is drawn between when the last tick stepped it (`m_stepFrame`).
+**Seen** at 60 on stage 2: a walking critter moves 0.33 units every frame (its 0.8-unit step x 5 / 12), not 0.8 on 5
+frames of 12; an item kicked up (a temporary hook) moves every frame, 6.1 easing to 3.5 units a frame as it rises,
+and its body's steps match a 25 Hz run's place for place at the same 25 Hz frame. `itemcmp.py` (stand-ins for the
+rate helpers added): 0 differences in 7,258 ops at 25, 6,676 with `--plant`.
+
+**Still at 25 Hz steps at 60:** UI tracks and tweens, sprite frames (2D or texture changes).
 
 ## Measuring
 

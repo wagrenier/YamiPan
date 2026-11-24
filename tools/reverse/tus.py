@@ -525,8 +525,9 @@ def cmd_queue(args):
 
 
 def progress_shot(key, claimed):
-    """Copy the session's last smoke-run screenshot to progress/<time>_<tu>.png (committed with the TU),
-    so the screen's history can be browsed per TU. Only a shot taken since the claim counts."""
+    """Copy the session's last smoke-run screenshot to progress/<time>_<tu>.png, so the screen's history
+    can be browsed per TU. Only a shot taken since the claim counts. progress/ is git-ignored: the shots
+    show the game's own content, so they stay on this machine and are never committed."""
     last = yamipan.WORK / 'shots' / 'last.png'
     if not last.exists():
         return None

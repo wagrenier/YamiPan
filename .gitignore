@@ -11,6 +11,10 @@ SCPS_*
 *.ELF
 *.elf
 
+# Screenshots of the running game (tus.py finish copies one per TU): they show the game's own
+# content, so they stay local
+progress/
+
 # Regenerated reversing intermediates (Ghidra dumps, features, stages, shots, logs, instance cache)
 tools/reverse/work/
 

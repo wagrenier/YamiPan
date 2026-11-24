@@ -5,6 +5,7 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "game/datetime.h"
 #include "game/debugsys.h"
@@ -211,6 +212,126 @@ float palEase(float rate)
     if (share == 1.0f)
         return rate;
     return 1.0f - powf(1.0f - rate, share);
+}
+
+int palFrame()
+{
+    return (int)(gGameSystem->m_clock.m_time / kClockTicksPerFrame);
+}
+
+// The master clock's ticks past the last 25 Hz frame's end, as a share of one: a step taken at that end is drawn
+// from the place before it, reaching it when the next step is due, so what is kept in 25 Hz steps is drawn one 25 Hz
+// frame late and moves every frame.
+float palDrawShare()
+{
+    if (YamiPan_GameRate() == kPalFramesPerSecond)
+        return 1.0f;   // the ROM's pace: the newest place
+    return (float)(gGameSystem->m_clock.m_time % kClockTicksPerFrame) / (float)kClockTicksPerFrame;
+}
+
+namespace {
+
+// A turn as a quaternion, x y z w.
+struct PalTurn
+{
+    float x, y, z, w;
+};
+
+// The unit turn of three unit axes (rows): Shepperd's method. False for one with no quaternion (mirrored).
+bool palTurnOf(PalTurn &out, const float m[3][3])
+{
+    const float det = m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) -
+                      m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
+                      m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+    if (!(det > 0.5f))
+        return false;
+    const float trace = m[0][0] + m[1][1] + m[2][2];
+    if (trace > 0.0f) {
+        const float s = sqrtf(trace + 1.0f) * 2.0f;
+        out = {(m[2][1] - m[1][2]) / s, (m[0][2] - m[2][0]) / s, (m[1][0] - m[0][1]) / s, 0.25f * s};
+    } else if (m[0][0] > m[1][1] && m[0][0] > m[2][2]) {
+        const float s = sqrtf(1.0f + m[0][0] - m[1][1] - m[2][2]) * 2.0f;
+        out = {0.25f * s, (m[0][1] + m[1][0]) / s, (m[0][2] + m[2][0]) / s, (m[2][1] - m[1][2]) / s};
+    } else if (m[1][1] > m[2][2]) {
+        const float s = sqrtf(1.0f + m[1][1] - m[0][0] - m[2][2]) * 2.0f;
+        out = {(m[0][1] + m[1][0]) / s, 0.25f * s, (m[1][2] + m[2][1]) / s, (m[0][2] - m[2][0]) / s};
+    } else {
+        const float s = sqrtf(1.0f + m[2][2] - m[0][0] - m[1][1]) * 2.0f;
+        out = {(m[0][2] + m[2][0]) / s, (m[1][2] + m[2][1]) / s, 0.25f * s, (m[1][0] - m[0][1]) / s};
+    }
+    return true;
+}
+
+// palTurnOf's inverse.
+void palAxesOf(float m[3][3], const PalTurn &q)
+{
+    m[0][0] = 1.0f - 2.0f * (q.y * q.y + q.z * q.z);
+    m[0][1] = 2.0f * (q.x * q.y - q.z * q.w);
+    m[0][2] = 2.0f * (q.x * q.z + q.y * q.w);
+    m[1][0] = 2.0f * (q.x * q.y + q.z * q.w);
+    m[1][1] = 1.0f - 2.0f * (q.x * q.x + q.z * q.z);
+    m[1][2] = 2.0f * (q.y * q.z - q.x * q.w);
+    m[2][0] = 2.0f * (q.x * q.z - q.y * q.w);
+    m[2][1] = 2.0f * (q.y * q.z + q.x * q.w);
+    m[2][2] = 1.0f - 2.0f * (q.x * q.x + q.y * q.y);
+}
+
+// The unit axes of a placement and their lengths. False for a flat one.
+bool palAxesSplit(float unit[3][3], float length[3], const float m[4][4])
+{
+    for (int axis = 0; axis < 3; axis++) {
+        length[axis] = sqrtf(m[axis][0] * m[axis][0] + m[axis][1] * m[axis][1] + m[axis][2] * m[axis][2]);
+        if (!(length[axis] > 0.0f))
+            return false;
+        for (int lane = 0; lane < 3; lane++)
+            unit[axis][lane] = m[axis][lane] / length[axis];
+    }
+    return true;
+}
+
+} // namespace
+
+void palBlendMatrix(float out[4][4], const float from[4][4], const float to[4][4], float share)
+{
+    float fromUnit[3][3], toUnit[3][3], fromLength[3], toLength[3];
+    PalTurn a, b;
+    if (share >= 1.0f || !palAxesSplit(fromUnit, fromLength, from) || !palAxesSplit(toUnit, toLength, to) ||
+        !palTurnOf(a, fromUnit) || !palTurnOf(b, toUnit)) {
+        memcpy(out, to, sizeof(float[4][4]));
+        return;
+    }
+    if (share < 0.0f)
+        share = 0.0f;
+
+    // The shorter way round, then the slerp; nearly the same turn, a straight line.
+    float cosine = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+    if (cosine < 0.0f) {
+        b = {-b.x, -b.y, -b.z, -b.w};
+        cosine = -cosine;
+    }
+    float wa = 1.0f - share;
+    float wb = share;
+    if (cosine < 0.9995f) {
+        const float angle = acosf(cosine);
+        const float sine = sinf(angle);
+        wa = sinf((1.0f - share) * angle) / sine;
+        wb = sinf(share * angle) / sine;
+    }
+    PalTurn turn = {a.x * wa + b.x * wb, a.y * wa + b.y * wb, a.z * wa + b.z * wb, a.w * wa + b.w * wb};
+    const float norm = sqrtf(turn.x * turn.x + turn.y * turn.y + turn.z * turn.z + turn.w * turn.w);
+    turn = {turn.x / norm, turn.y / norm, turn.z / norm, turn.w / norm};
+
+    float axes[3][3];
+    palAxesOf(axes, turn);
+    for (int axis = 0; axis < 3; axis++) {
+        const float length = fromLength[axis] + (toLength[axis] - fromLength[axis]) * share;
+        for (int lane = 0; lane < 3; lane++)
+            out[axis][lane] = axes[axis][lane] * length;
+        out[axis][3] = to[axis][3];
+    }
+    for (int lane = 0; lane < 3; lane++)
+        out[3][lane] = from[3][lane] + (to[3][lane] - from[3][lane]) * share;
+    out[3][3] = to[3][3];
 }
 
 // ──────────────────────────────────────────────────────────────────────

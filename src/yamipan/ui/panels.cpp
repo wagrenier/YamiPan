@@ -20,6 +20,7 @@
 #include "yamipan/core/paths.h"
 #include "yamipan/core/window.h"
 #include "yamipan/io/input_system.h"
+#include "yamipan/os/yamipan_time.h"
 #include "yamipan/rendering/renderer.h"
 #include "yamipan/ui/teleport_panel.h"
 
@@ -165,8 +166,20 @@ private:
                               "Off: for each vertex, as the PS2 does.");
 
         ImGui::Separator();
+        // Smooth motion only fills in between the ROM's 25 frames a second; at a native game_rate there is nothing
+        // to fill (Renderer::blendsFrames).
+        const int gameRate = YamiPan_GameRate();
+        const bool nativeRate = gameRate != rendering::Renderer::kRomGameRate;
+        ImGui::BeginDisabled(nativeRate);
         if (ImGui::Checkbox("Smooth motion", &display.smoothMotion))
             m_config.save();
+        ImGui::EndDisabled();
+        if (nativeRate)
+            ImGui::SetItemTooltip("The game runs at %d fps (game_rate): every frame is its own, shown as it is.",
+                                  gameRate);
+        else
+            ImGui::SetItemTooltip("Between two of the game's 25 frames a second, the cameras and models move\n"
+                                  "part of the way: one frame of delay. game_rate 60 runs the game at 60 itself.");
         const rendering::Renderer::Stats stats = m_application.renderer().stats();
         ImGui::TextDisabled("  game %.1f fps, shown %.1f, blended %.1f", stats.gameRate, stats.presentRate,
                             stats.blendRate);

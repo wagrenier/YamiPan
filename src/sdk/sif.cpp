@@ -1,8 +1,8 @@
 // sdk/sif.cpp -- the EE's side of the IOP.
 //
 // An IOP runs (yamipan/iop/): loading RXSNDDRV.IRX boots the sound driver, IOP memory is
-// iop::SystemMemory (an IOP address is a host address below 4 GB), SIF DMA and sceSifGetOtherData copy,
-// and calls to the driver's RPC 0xd000 go through its own dispatcher, on the caller's thread, before
+// iop::SystemMemory (an IOP address is an offset into it, as on the IOP), SIF DMA and sceSifGetOtherData
+// copy between host pointers (the EE's side passes YamiPan_IopPointer of its IOP address), and calls to the driver's RPC 0xd000 go through its own dispatcher, on the caller's thread, before
 // sceSifCallRpc returns (so its end function runs at once). The other modules only "load", and a call
 // to a server nobody registered answers at once with an empty reply.
 #include <algorithm>
@@ -163,14 +163,18 @@ u_int sceSifSetDma(sceSifDmaData *sdd, int len)
 }
 
 // Mode 1 is sysmem's high placement (the sound library's "from the top"), 0 its low one; mode 2 ("at
-// `addr`") no caller uses, so it is placed low.
+// `addr`") no caller uses, so it is placed low. As on the PS2, the EE gets the block's IOP address, not
+// something it can dereference.
 void *sceSifAllocSysMemory(int mode, u_int size, void *)
 {
     using Placement = yamipan::iop::SystemMemory::Placement;
-    return yamipan::iop::Kernel::instance().memory().allocate(size, mode == 1 ? Placement::High : Placement::Low);
+    const std::uint32_t address =
+        yamipan::iop::Kernel::instance().memory().allocate(size, mode == 1 ? Placement::High : Placement::Low);
+    return reinterpret_cast<void *>(static_cast<std::uintptr_t>(address));
 }
 
 int sceSifFreeSysMemory(void *addr)
 {
-    return yamipan::iop::Kernel::instance().memory().free(addr) ? 0 : -1;
+    const auto address = static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(addr));
+    return yamipan::iop::Kernel::instance().memory().free(address) ? 0 : -1;
 }

@@ -53,15 +53,18 @@
  *  records {mask, values} indexed by bank for that.
  *
  *  Host: IOP addresses the EE hands over (heap blocks, SPU addresses) are
- *  u_int words, as on the IOP; IOP heap blocks come from the host IOP arena
- *  (YamiPan_IopAllocSysMemory), which lies below 4 GB, so they are host
- *  pointers.  EE addresses are not (see RxSndDrvEePointer).
+ *  u_int words, as on the IOP; an IOP heap address is an offset into the
+ *  host IOP arena (sdk/iop_host.h), so a word becomes a pointer through
+ *  YamiPan_IopPointer and a pointer into the arena a word through
+ *  YamiPan_IopAddress.  EE addresses are host pointers the EE truncated
+ *  (see RxSndDrvEePointer).
  * ======================================================================== */
 
 #ifndef YAMIPAN_IOP_RXSNDDRV_H
 #define YAMIPAN_IOP_RXSNDDRV_H
 
 #include "scetypes.h"
+#include "iop_host.h"
 
 #include <stddef.h>
 

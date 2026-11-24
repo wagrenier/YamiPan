@@ -85,12 +85,24 @@ void YamiPan_IopFlushDcache() {}
 
 void *YamiPan_IopAllocSysMemory(int, int size, void *)
 {
-    return size > 0 ? kernel().memory().allocate(static_cast<std::size_t>(size)) : nullptr;
+    auto &memory = kernel().memory();
+    return size > 0 ? memory.pointer(memory.allocate(static_cast<std::size_t>(size))) : nullptr;
 }
 
 int YamiPan_IopFreeSysMemory(void *ptr)
 {
-    return kernel().memory().free(ptr) ? 0 : -1;
+    auto &memory = kernel().memory();
+    return memory.free(memory.address(ptr)) ? 0 : -1;
+}
+
+void *YamiPan_IopPointer(u_int iopAddr)
+{
+    return kernel().memory().pointer(iopAddr);
+}
+
+u_int YamiPan_IopAddress(const void *ptr)
+{
+    return kernel().memory().address(ptr);
 }
 
 int YamiPan_IopQueryMemSize()

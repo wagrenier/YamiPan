@@ -359,7 +359,7 @@ int RxSndDrvBgmOpen(u_int slot, u_int xseq)
             goto fail;
         }
 
-        u_char *head = (u_char *)(uintptr_t)*headp;
+        u_char *head = (u_char *)YamiPan_IopPointer(*headp);
         for (int i = 0; i < head[0]; i++)
         {
             RxSndDrvBgmTrack *t = s_bgm.m_trackFree;

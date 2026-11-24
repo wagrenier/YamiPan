@@ -13,6 +13,7 @@
 #include "yamipan/core/event_queue.h"
 #include "yamipan/core/logger.h"
 #include "yamipan/core/window.h"
+#include "yamipan/os/yamipan_time.h"
 #include "yamipan/rendering/film_overlay_pass.h"
 #include "yamipan/rendering/frame_blend.h"
 #include "yamipan/rendering/frame_filter_pass.h"
@@ -388,18 +389,35 @@ void Renderer::recordScene(SDL_GPUCommandBuffer *commands, const Frame &frame, c
     recordUi(commands, frame, layout, nextDraw, frame.draws.size(), !cleared);
 }
 
+bool Renderer::blendsFrames() const
+{
+    return m_config.display.smoothMotion && YamiPan_GameRate() == kRomGameRate;
+}
+
 float Renderer::blendNow()
 {
     m_blendedPlacements = 0;
     m_blendedQuads = 0;
-    if (!m_config.display.smoothMotion || m_previous == nullptr || m_shown == nullptr)
+    m_blendMiss = "";
+    if (!blendsFrames() || m_previous == nullptr || m_shown == nullptr)
+    {
+        m_blendMiss = " off";
         return 1.0f;
+    }
     const std::optional<float> progress = FrameBlend::progress(*m_previous, *m_shown, FrameBlend::Clock::now());
     if (!progress)
+    {
+        m_blendMiss = " unpaired";
         return 1.0f;
+    }
     const float alpha = m_fixedBlend >= 0.0f ? m_fixedBlend : *progress;
-    if (alpha >= 1.0f || !FrameBlend::blendPasses(*m_previous, *m_shown, alpha, m_blendedPasses))
+    if (alpha >= 1.0f)
         return 1.0f;
+    if (!FrameBlend::blendPasses(*m_previous, *m_shown, alpha, m_blendedPasses))
+    {
+        m_blendMiss = m_previous->modelPasses.size() != m_shown->modelPasses.size() ? " passes" : " cut";
+        return 1.0f;
+    }
     m_blendedPlacements =
         FrameBlend::blendPlacements(*m_previous, *m_shown, alpha, m_blendedInstances, m_blendedPalettes);
     const FrameBlend::QuadBlend quads = FrameBlend::blendQuads(*m_previous, *m_shown, alpha, m_blendedVertices);
@@ -626,8 +644,8 @@ void Renderer::renderOnce()
         std::string bone;
         if (!palettes.empty())
             bone = std::format(" bone {:.3f} {:.3f} {:.3f}", palettes[0][12], palettes[0][13], palettes[0][14]);
-        log::info("[blend] frame {} +{:.1f} ms blend {:.3f} places {}/{} quads {}/{} step {:.2f}{}{}{}", m_shown->number,
-                  sinceField, blend, m_blendedPlacements,
+        log::info("[blend] frame {} +{:.1f} ms blend {:.3f}{} places {}/{} quads {}/{} step {:.2f}{}{}{}",
+                  m_shown->number, sinceField, blend, m_blendMiss, m_blendedPlacements,
                   m_shown->modelInstances.size() + m_shown->modelPalettes.size(), m_blendedQuads,
                   m_shown->modelQuads.size(), m_quadStep, newFrame ? " new" : "", bone, eyes);
     }

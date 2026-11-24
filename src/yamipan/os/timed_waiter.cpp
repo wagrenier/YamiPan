@@ -1,90 +1,74 @@
 #include "yamipan/os/timed_waiter.h"
 
+#include <algorithm>
+#include <cstdint>
 #include <stdexcept>
 
+#include <SDL3/SDL_mutex.h>
 #include <SDL3/SDL_timer.h>
-
-#ifdef _WIN32
-#include <windows.h>
-
-#ifndef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
-#define CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 0x2 // Windows 10 1803
-#endif
-#endif
 
 namespace yamipan::os
 {
+namespace
+{
 
-#ifdef _WIN32
+using std::chrono::milliseconds;
+using std::chrono::nanoseconds;
+
+// The semaphore's timeout can end up to ~1.6 ms late at a 1 ms timer period: it stops this far short of
+// the deadline, and precise delays of at most kSlice cover the rest, looking for a wake() between them.
+constexpr nanoseconds kMargin = milliseconds(2);
+constexpr nanoseconds kSlice = std::chrono::microseconds(250);
+
+} // namespace
 
 TimedWaiter::TimedWaiter()
+    : m_wake(SDL_CreateSemaphore(0))
 {
-    m_timer = CreateWaitableTimerExW(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
-    if (m_timer == nullptr) // before Windows 10 1803: a plain timer, at the system timer's period
-        m_timer = CreateWaitableTimerExW(nullptr, nullptr, 0, TIMER_ALL_ACCESS);
-    m_event = CreateEventW(nullptr, FALSE, FALSE, nullptr);
-    if (m_timer == nullptr || m_event == nullptr)
-        throw std::runtime_error("TimedWaiter: no waitable timer or event");
+    if (m_wake == nullptr)
+        throw std::runtime_error("TimedWaiter: no semaphore");
 }
 
 TimedWaiter::~TimedWaiter()
 {
-    CloseHandle(m_event);
-    CloseHandle(m_timer);
+    SDL_DestroySemaphore(m_wake);
 }
 
 void TimedWaiter::waitUntil(Clock::time_point deadline)
 {
-    const auto remaining = std::chrono::duration_cast<std::chrono::nanoseconds>(deadline - Clock::now());
-    if (remaining.count() <= 0)
+    for (;;)
     {
-        WaitForSingleObject(m_event, 0); // a wake() meant for this wait is spent by it
-        return;
-    }
+        const nanoseconds remaining = deadline - Clock::now();
+        if (remaining.count() <= 0)
+        {
+            SDL_TryWaitSemaphore(m_wake); // a wake() meant for this wait is spent by it
+            return;
+        }
 
-    // Negative: relative, in 100 ns units, rounded up so the deadline is never early.
-    LARGE_INTEGER due;
-    due.QuadPart = -((remaining.count() + 99) / 100);
-    const HANDLE handles[] = {m_event, m_timer};
-    if (!SetWaitableTimerEx(m_timer, &due, 0, nullptr, nullptr, nullptr, 0))
-    {
-        WaitForSingleObject(m_event, static_cast<DWORD>((remaining.count() + 999'999) / 1'000'000));
-        return;
+        const auto bulk = std::chrono::duration_cast<milliseconds>(remaining - kMargin).count();
+        if (bulk >= 1)
+        {
+            if (SDL_WaitSemaphoreTimeout(m_wake, static_cast<Sint32>(std::min<std::int64_t>(bulk, INT32_MAX))))
+                return;
+            continue;
+        }
+
+        if (SDL_TryWaitSemaphore(m_wake))
+            return;
+        SDL_DelayNS(static_cast<Uint64>(std::min(remaining, kSlice).count()));
     }
-    WaitForMultipleObjects(2, handles, FALSE, INFINITE);
 }
 
 void TimedWaiter::wake()
 {
-    SetEvent(m_event);
+    // Kept at most once: a second wake() before the wait would only end the next one early for nothing.
+    if (SDL_GetSemaphoreValue(m_wake) == 0)
+        SDL_SignalSemaphore(m_wake);
 }
-
-#else
-
-TimedWaiter::TimedWaiter() = default;
-TimedWaiter::~TimedWaiter() = default;
-
-void TimedWaiter::waitUntil(Clock::time_point deadline)
-{
-    std::unique_lock lock(m_lock);
-    m_changed.wait_until(lock, deadline, [this] { return m_woken; });
-    m_woken = false;
-}
-
-void TimedWaiter::wake()
-{
-    {
-        std::scoped_lock lock(m_lock);
-        m_woken = true;
-    }
-    m_changed.notify_one();
-}
-
-#endif
 
 void TimedWaiter::sleepFor(std::chrono::nanoseconds duration)
 {
-    // SDL waits on a high-resolution waitable timer on Windows, as above.
+    // SDL waits on a high-resolution waitable timer on Windows.
     if (duration.count() > 0)
         SDL_DelayNS(static_cast<Uint64>(duration.count()));
 }

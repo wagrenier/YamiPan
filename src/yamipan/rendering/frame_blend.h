@@ -4,7 +4,8 @@
 // one game frame behind and moves at the monitor's rate. What is drawn is still the newer frame's
 // (roadmap-framerate.md, option A). The effects' particles move with the blended camera and, paired by effect and
 // slot, on their own. Not blended: what the game places on its own thread (the far passes' culled batches) and what it
-// projects to 2D itself.
+// projects to 2D itself. Used at the ROM's 25 frames a second only: at game_rate 50 or 60 the game moves everything
+// each frame itself, and its frames are shown as they come (Renderer::blendsFrames).
 #pragma once
 
 #include <chrono>

@@ -5,12 +5,14 @@
 // 1 ms sleep_for takes 15.5 ms, a wait_until for a deadline 20 ms ahead wakes 8 ms late on average and up to
 // 16 ms, with SDL's timeBeginPeriod(1) in force; Win32's Sleep(1) in the same process takes 1.6 ms). The EE's
 // clock cannot live with that: the field clock would deliver its 50 Hz unevenly, so a frame that needs two
-// fields sometimes gets 25 ms instead of 40. On Windows this waits on a high-resolution waitable timer.
+// fields sometimes gets 25 ms instead of 40. So the wait is SDL's: its semaphore (which a wake() releases at
+// once, and whose millisecond timeouts keep to the 1 ms timer period SDL sets) until a couple of
+// milliseconds before the deadline, then SDL's precise delay (a high-resolution waitable timer on Windows).
 #pragma once
 
 #include <chrono>
-#include <condition_variable>
-#include <mutex>
+
+struct SDL_Semaphore;
 
 namespace yamipan::os
 {
@@ -35,14 +37,7 @@ public:
     static void sleepFor(std::chrono::nanoseconds duration);
 
 private:
-#ifdef _WIN32
-    void *m_timer = nullptr; // HANDLE
-    void *m_event = nullptr; // HANDLE, auto-reset: one wake() releases one wait
-#else
-    std::mutex m_lock;
-    std::condition_variable m_changed;
-    bool m_woken = false;
-#endif
+    SDL_Semaphore *m_wake = nullptr; // 0 or 1: one wake() releases one wait
 };
 
 } // namespace yamipan::os

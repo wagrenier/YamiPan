@@ -452,7 +452,7 @@ static void RxSndDrvSeApply(void)
                 }
                 else
                 {
-                    se->m_code   = (const u_char *)(uintptr_t)code;
+                    se->m_code   = (const u_char *)YamiPan_IopPointer(code);
                     se->m_flags |= RXSNDDRV_SE_LOCKED;
                     se->m_tempo  = ticks < 1 ? 0x3c : ticks;
                     se->m_vol[0] = (short)volL;

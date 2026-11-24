@@ -100,6 +100,13 @@ private:
     void placeNodes();                                                   // FS2 0x0023d0c0
     // The floor under the owner plus a margin, or its own height (inline in the ROM).
     float heightOverFloor();
+    // PC: game_rate (game/gamerate.h). The matrix the body is at: the owner's, except above 25 while it moves,
+    // when the owner's is drawn between the last two steps and the body's is m_steps[1].
+    const sceVu0FVECTOR *bodyMatrix();
+    // endFrame's new matrix for the body: the owner's at 25, as the ROM; above it, the next step.
+    void stepTo(sceVu0FMATRIX frame);
+    // Above 25, the owner's matrix palDrawShare() of the way between the last two steps.
+    void drawBetweenSteps();
 
     ItemNode m_nodes[kItemNodes]; // FS2 +0x10
     ItemLink m_links[kItemLinks]; // FS2 +0x110
@@ -112,6 +119,11 @@ private:
     u_char m_isWeapon;          // FS2 +0x204
     u_char m_hasTouchBody;      // FS2 +0x205
     float  m_stillSeconds = 0.0f; // FS2 +0x208
+
+    // PC: game_rate (game/gamerate.h). Above 25 the body moves in 25 Hz steps (update, endFrame on the tick) while
+    // the owner is drawn every frame: the matrices of the step before last and of the last, set while m_stepped.
+    sceVu0FMATRIX m_steps[2] = {};
+    bool m_stepped = false;
 };
 
 #endif /* _GAME_ITEMPHYSICS_H */

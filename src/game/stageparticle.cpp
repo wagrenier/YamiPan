@@ -1343,8 +1343,10 @@ void CritterNest::update(const float *scare)
         critter->m_position[2] += 1.0f;
         m_critters.push_back(critter);
     }
-    for (Critter *critter : m_critters)
+    for (Critter *critter : m_critters) {
+        critter->keepPlace();   // PC: game_rate (game/gamerate.h)
         critter->update(m_range, m_xform.position, scare);
+    }
 }
 
 // FS2 0x002b38b0
@@ -1379,7 +1381,16 @@ void Critter::draw(const sceVu0FVECTOR *view, const sceVu0FVECTOR *screen, const
                    sceVif1Packet *packet) const
 {
     sceVu0FMATRIX toView;
-    multiplyMatrix(toView, view, m_matrix);
+    // PC: game_rate (game/gamerate.h): above 25, between its last two 25 Hz steps when the last tick stepped it;
+    // the ROM's m_matrix at 25.
+    const float share = palDrawShare();
+    if (share < 1.0f && m_stepFrame == palFrame()) {
+        sceVu0FMATRIX placed;
+        palBlendMatrix(placed, m_before, m_matrix, share);
+        multiplyMatrix(toView, view, placed);
+    } else {
+        multiplyMatrix(toView, view, m_matrix);
+    }
 
     const float halfX = m_half[turned ? 0 : 1];
     const float halfY = m_half[turned ? 1 : 0];
@@ -1427,6 +1438,14 @@ void Critter::draw(const sceVu0FVECTOR *view, const sceVu0FVECTOR *screen, const
     quad.owner = this;      // PC: smooth motion pairs the critter across frames
     quad.slot = 0;
     YamiPan_ModelDrawQuad(packet, &quad);
+}
+
+// PC: game_rate. The first step has no place before it (m_matrix is still the unit), so it is drawn where it lands.
+void Critter::keepPlace()
+{
+    copyMatrix(m_before, m_matrix);
+    m_stepFrame = m_placed ? palFrame() : -1;
+    m_placed = true;
 }
 
 void Critter::addToPlace(const sceVu0FVECTOR step)

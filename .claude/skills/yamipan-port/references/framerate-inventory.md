@@ -49,8 +49,8 @@ called each frame) is missed by the scan; the shared mechanisms were found by fo
 |---|---|---|---|
 | main camera | stagecamera.cpp 434-734 | five `approachVec3` eases (focus and eye offsets, position, look, turn), `kFollowMaxStep` 25, `kLookMaxStep` 20, `kTurnMaxStep` 0.314 a frame; zoom +/- `kZoomStep` 20 a frame; `m_blockedFrames++` | Q, V, T |
 | particles | stageparticle.cpp 283-537, 620 | `age++`, `life--`, `frame++` (sprite frames), `velocity[2] -= gravity`, `size *= sizeGrowth`, `rotation += spin`; emission `m_delay++` and its rolls; `m_age++` | T, A, D, V, R |
-| critters | stageparticle.cpp 1299-1701 | spawn timer, `kCritterTurnStep` a frame, `m_timer` waits (rolled in frames), sprite `m_frameTicks`, fall speed, flee frames | T, V, R |
-| item physics | itemphysics.cpp 290, 346, 365 | `velocity *= damping`, `position[2] -= kGravity`, `kLandSpeed` compared with a speed a frame (`keepsMoving` is already in seconds) | D, A, V on the threshold |
+| critters | stageparticle.cpp 1299-1701 | spawn timer, `kCritterTurnStep` a frame, `m_timer` waits (rolled in frames), sprite `m_frameTicks`, fall speed, flee frames | T, V, R; run in whole 25 Hz steps, drawn between the last two (`Critter::keepPlace`, 2026-11-18) |
+| item physics | itemphysics.cpp 290, 346, 365 | `velocity *= damping`, `position[2] -= kGravity`, `kLandSpeed` compared with a speed a frame (`keepsMoving` is already in seconds) | D, A, V on the threshold; run in whole 25 Hz steps, the owner drawn between the last two (`ItemPhysics::drawBetweenSteps`, 2026-11-18) |
 | sight-jack | stageparty.cpp 532, 1200, 1375-1418 | `m_holdFrames` (`kHoldFrames`), `m_markerFrames`, `m_visionFade`, `m_flashFrames`, `m_visionFrames`, `m_bindFlash` | T |
 | the jack's film | stageparty.cpp 1657, 1666 | `corner.progress += corner.step`, `++corner.shown` | V, T |
 | game over | gameoversequence.cpp 84, 93, 217-222, 313 | `m_timer--` twice; the death camera's swing (`m_swingSpeed +/- m_swingAccel`, `m_angle += m_swingSpeed`); `SceneDirector` `m_frame++` | T, A, V |

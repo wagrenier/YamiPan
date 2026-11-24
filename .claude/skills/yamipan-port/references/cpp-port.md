@@ -66,7 +66,7 @@ src/yamipan/
            InterruptController   INTC / DMAC handlers, DIntr, the vblank clock, alarms
   iop/     Kernel                the IOP as RXSNDDRV sees it: one big kernel lock over its threads,
                                  event flags, V-blank at the EE's video standard
-           SystemMemory          the IOP's 2 MB, reserved below 4 GB (IOP addresses are u_int)
+           SystemMemory          the IOP's 2 MB; an IOP address (u_int) is an offset into it
            RpcServers            the SIF RPC servers a module registers; a call runs under the lock
            Spu2                  libsd's chip: registers, 2 MB of sound RAM, transfers that complete
            Spu2Voices            the SPU2's synthesiser: 48 ADPCM voices, ADSR, noise, pitch

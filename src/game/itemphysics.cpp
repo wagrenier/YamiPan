@@ -160,10 +160,10 @@ int ItemPhysics::collisionHook0(CollisionContact *contact, const float *normal,
 
 float ItemPhysics::heightOverFloor()
 {
-    float height = m_owner->getWorldMatrix()[3][2];
+    float height = bodyMatrix()[3][2];   // PC: game_rate, the body's matrix (the owner's at 25)
     sceVu0FVECTOR from, to, hit;
-    copyVector(from, m_owner->getWorldMatrix()[3]);
-    copyVector(to, m_owner->getWorldMatrix()[3]);
+    copyVector(from, bodyMatrix()[3]);
+    copyVector(to, bodyMatrix()[3]);
     to[2] -= kFloorProbe;
     if (gStageScene->raycast(hit, from, to, 0, kFaceFloor, kFaceSkip, nullptr) != nullptr)
         height = hit[2] + kFloorMargin;
@@ -286,8 +286,11 @@ void ItemPhysics::endFrame()
         return;
     // PC: game_rate (game/gamerate.h): a body's simulation (Verlet steps of a 25 Hz frame, its gravity, damping,
     // link stiffness and landing speed all in those steps) runs whole 25 Hz frames, as the ROM's.
-    if (palTicks() == 0)
+    // Between two steps the owner is drawn part of the way from one to the other.
+    if (palTicks() == 0) {
+        drawBetweenSteps();
         return;
+    }
     for (int i = 0; i < m_nodeCount; i++) {
         ItemNode &node = m_nodes[i];
         for (int lane = 0; lane < 4; lane++)
@@ -313,7 +316,31 @@ void ItemPhysics::endFrame()
     frame[3][1] = m_links[0].a[1] - turned[1];
     frame[3][2] = m_links[0].a[2] - turned[2];
     frame[3][3] = m_links[0].a[3];
-    copyMatrix(const_cast<sceVu0FVECTOR *>(m_owner->getWorldMatrix()), frame);
+    stepTo(frame);   // PC: game_rate; the ROM copies frame into the owner's matrix, as stepTo does at 25
+}
+
+// PC: game_rate (game/gamerate.h), the body's matrix apart from the owner's above 25.
+const sceVu0FVECTOR *ItemPhysics::bodyMatrix()
+{
+    return m_stepped ? m_steps[1] : m_owner->getWorldMatrix();
+}
+
+void ItemPhysics::stepTo(sceVu0FMATRIX frame)
+{
+    if (!m_stepped) {
+        copyMatrix(const_cast<sceVu0FVECTOR *>(m_owner->getWorldMatrix()), frame);
+        return;
+    }
+    copyMatrix(m_steps[0], m_steps[1]);
+    copyMatrix(m_steps[1], frame);
+    drawBetweenSteps();
+}
+
+void ItemPhysics::drawBetweenSteps()
+{
+    if (m_stepped)
+        palBlendMatrix(const_cast<sceVu0FVECTOR *>(m_owner->getWorldMatrix()), m_steps[0], m_steps[1],
+                       palDrawShare());
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -443,6 +470,11 @@ void ItemPhysics::setMoving(bool moving, bool settled)
 {
     if (m_owner == nullptr)
         return;
+    // PC: game_rate (game/gamerate.h): the owner's matrix back to the body's, which it starts again from or rests at.
+    if (m_stepped) {
+        copyMatrix(const_cast<sceVu0FVECTOR *>(m_owner->getWorldMatrix()), m_steps[1]);
+        m_stepped = false;
+    }
     m_moving = moving;
     for (int i = 0; i < ItemBody_Count; i++) {
         if (m_bodies[i] != nullptr)
@@ -451,6 +483,12 @@ void ItemPhysics::setMoving(bool moving, bool settled)
     if (m_moving) {
         placeNodes();
         m_owner->setDirty(false);
+        // PC: game_rate: above 25 its steps start from the owner's matrix; at 25 the owner's is the body's.
+        if (palScale() < 1.0f) {
+            copyMatrix(m_steps[0], m_owner->getWorldMatrix());
+            copyMatrix(m_steps[1], m_owner->getWorldMatrix());
+            m_stepped = true;
+        }
     }
     else if (settled) {
         matrixToRotYXZ(m_owner->m_xform.rotation, m_owner->getWorldMatrix());

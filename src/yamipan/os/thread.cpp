@@ -7,6 +7,8 @@
 #include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_thread.h>
 
+#include "yamipan/core/crash_report.h"
+
 namespace yamipan::os
 {
 
@@ -17,6 +19,7 @@ struct Thread::Start
     static int SDLCALL run(void *data)
     {
         const std::unique_ptr<Start> start(static_cast<Start *>(data));
+        crash::installThread(); // the fault handlers are per thread under Windows' CRT
         start->body();
         return 0;
     }

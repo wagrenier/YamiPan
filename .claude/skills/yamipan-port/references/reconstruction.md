@@ -238,6 +238,7 @@ it, and make the compilers prove its layout.
    (`tm2png.py` -> `work/ref/`). A wrong picture is a bug to fix or record, never a pass.
 5. `refresh.py`: function list and status regenerated.
 6. One commit per session, made by `finish` (refuses a red build, a failed layoutcheck, `main`); the
-   message lists the written and stubbed functions and the screenshot (`progress/`).
+   message lists the written and stubbed functions and the screenshot (`progress/`, kept locally:
+   it is git-ignored, since the repository is public and screenshots show the game's content).
 
 - **A layout-driven widget's values can be read off the game itself** (2026-11-03, PrgMcCard): the S2D file holds the variables' real names, so dump `S2dVar::name` and `getString` from the ctor once, and to name a value that selects a text image, set the variable in a temporary loop and take a shot per value (`--shot-every`): two guesses fell that way. Neither stays in the commit.

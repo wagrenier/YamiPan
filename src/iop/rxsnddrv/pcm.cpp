@@ -206,7 +206,7 @@ static inline int RxSndDrvPcmClampVol(int v)
 
 static inline const short *RxSndDrvPcmIop(u_int iop)
 {
-    return (const short *)(uintptr_t)iop;
+    return (const short *)YamiPan_IopPointer(iop);
 }
 
 /* Entry `i`'s source, or the zero buffer for an entry this pass left empty
